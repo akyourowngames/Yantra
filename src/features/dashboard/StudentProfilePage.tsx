@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import {
+  ArrowUpRight,
   BarChart3,
   Bell,
   BookOpen,
@@ -14,8 +15,11 @@ import {
   LayoutGrid,
   Lock,
   LogOut,
+  Mail,
   Rocket,
   Settings2,
+  ShieldCheck,
+  Sparkles,
   TrendingUp,
   UserCircle2,
   Users,
@@ -118,6 +122,15 @@ const helpFaqs = [
   },
 ] as const;
 
+const helpTopics = ['Profile edits', 'Curriculum access', 'Progress questions', 'Manual review'] as const;
+
+const helpInsights = [
+  { label: 'Response Window', value: '1 working day' },
+  { label: 'Profile Storage', value: 'This browser' },
+  { label: 'Best For', value: 'Record fixes' },
+  { label: 'Coverage', value: 'Curriculum + performance' },
+] as const;
+
 const activityCards: ActivityCard[] = [
   {
     title: 'Performance Spike',
@@ -175,6 +188,8 @@ const profileInsetCardClassName = 'rounded-[1.75rem] border border-white/8 bg-wh
 const profilePanelCardClassName = 'rounded-2xl border border-white/8 bg-white/[0.04] p-4';
 const profileActionButtonClassName =
   'rounded-full border border-white/12 bg-white/[0.05] px-5 py-3 font-semibold text-white transition-colors hover:bg-white/[0.09] cursor-pointer';
+const supportActionCardClassName =
+  'group relative overflow-hidden rounded-[1.35rem] border border-white/8 bg-white/[0.04] p-4 text-left transition-all duration-300 hover:-translate-y-0.5 hover:border-white/14 hover:bg-white/[0.06] cursor-pointer';
 
 function isSkillLevel(value: unknown): value is StudentProfile['skillLevel'] {
   return value === 'Beginner' || value === 'Intermediate' || value === 'Advanced';
@@ -218,7 +233,7 @@ function PanelShell({
   onClose: () => void;
 }) {
   return (
-    <section className="fixed right-4 top-24 z-[60] w-[min(24rem,calc(100vw-2rem))] overflow-hidden rounded-[2rem] border border-white/8 bg-black/78 p-6 shadow-[0_30px_80px_rgba(0,0,0,0.45)] backdrop-blur-[28px] md:right-8">
+    <section className="fixed right-4 top-24 z-[60] max-h-[calc(100vh-7rem)] w-[min(24rem,calc(100vw-2rem))] overflow-hidden rounded-[2rem] border border-white/8 bg-black/78 p-6 shadow-[0_30px_80px_rgba(0,0,0,0.45)] backdrop-blur-[28px] md:right-8">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.14),transparent_30%),linear-gradient(180deg,rgba(255,255,255,0.04),transparent_38%,rgba(255,255,255,0.03))]" />
       <div className="pointer-events-none absolute right-[-16%] top-[-14%] h-40 w-40 rounded-full bg-white/[0.08] blur-[90px]" />
 
@@ -238,9 +253,58 @@ function PanelShell({
           </button>
         </div>
 
-        <div className="space-y-3">{children}</div>
+        <div className="max-h-[calc(100vh-12rem)] space-y-3 overflow-y-auto pr-1">{children}</div>
       </div>
     </section>
+  );
+}
+
+function SupportActionCard({
+  eyebrow,
+  title,
+  description,
+  icon: Icon,
+  href,
+  onClick,
+}: {
+  eyebrow: string;
+  title: string;
+  description: string;
+  icon: LucideIcon;
+  href?: string;
+  onClick?: () => void;
+}) {
+  const content = (
+    <>
+      <div className="pointer-events-none absolute right-[-14%] top-[-18%] h-20 w-20 rounded-full bg-white/[0.06] blur-[55px]" />
+
+      <div className="relative z-10 flex items-start justify-between gap-4">
+        <div className="flex h-11 w-11 items-center justify-center rounded-[1rem] border border-white/10 bg-white/[0.06] text-white/70 transition-colors group-hover:text-white">
+          <Icon size={18} />
+        </div>
+        <ArrowUpRight size={16} className="mt-1 shrink-0 text-white/30 transition-colors group-hover:text-white/72" />
+      </div>
+
+      <div className="relative z-10 mt-4">
+        <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/38">{eyebrow}</div>
+        <div className="mt-2 font-display text-lg text-white">{title}</div>
+        <div className="mt-2 text-sm leading-relaxed text-white/52">{description}</div>
+      </div>
+    </>
+  );
+
+  if (href) {
+    return (
+      <a href={href} className={supportActionCardClassName}>
+        {content}
+      </a>
+    );
+  }
+
+  return (
+    <button type="button" className={supportActionCardClassName} onClick={onClick}>
+      {content}
+    </button>
   );
 }
 
@@ -732,9 +796,7 @@ export default function StudentProfilePage() {
             <div className="flex items-start justify-between gap-4">
               <div>
                 <div className="font-display text-lg font-medium text-white">{profile.name}</div>
-                <div className="mt-1 text-sm text-white/52">
-                  {profile.classDesignation} · {profile.skillLevel} · {profile.progress}% complete
-                </div>
+                <div className="mt-1 text-sm text-white/52">{`${profile.classDesignation} | ${profile.skillLevel} | ${profile.progress}% complete`}</div>
               </div>
               <div className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-white/72">
                 Current
@@ -768,26 +830,28 @@ export default function StudentProfilePage() {
 
       {activePanel === 'help' && (
         <PanelShell title="Support" eyebrow="Help" onClose={() => setActivePanel(null)}>
-          <div className="relative overflow-hidden rounded-2xl border border-white/8 bg-white/[0.04] p-5">
-            <div className="pointer-events-none absolute right-[-18%] top-[-26%] h-40 w-40 rounded-full bg-white/[0.06] blur-[80px]" />
+          <div className="relative overflow-hidden rounded-[1.8rem] border border-white/8 bg-white/[0.045] p-5">
+            <div className="pointer-events-none absolute right-[-18%] top-[-22%] h-44 w-44 rounded-full bg-white/[0.07] blur-[90px]" />
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.1),transparent_30%),linear-gradient(180deg,rgba(255,255,255,0.04),transparent_40%,rgba(255,255,255,0.02))]" />
 
             <div className="relative z-10">
               <div className="flex items-start gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-[1.2rem] border border-white/10 bg-white/[0.06]">
-                  <HelpCircle size={20} className="text-white/72" />
+                <div className="flex h-12 w-12 items-center justify-center rounded-[1.2rem] border border-white/10 bg-white/[0.07]">
+                  <ShieldCheck size={20} className="text-white/78" />
                 </div>
 
-                <div>
-                  <div className="font-display text-xl font-semibold text-white">Student Support Desk</div>
+                <div className="flex-1">
+                  <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/38">Priority Support</div>
+                  <div className="mt-2 font-display text-2xl font-semibold text-white">Student Support Desk</div>
                   <p className="mt-2 text-sm leading-relaxed text-white/58">
-                    Get help with profile updates, curriculum access, progress questions, and record issues without leaving
-                    this page.
+                    Everything here is tuned to {profile.name}&apos;s active record so profile edits, curriculum questions,
+                    and progress follow-ups can be handled from one focused surface.
                   </p>
                 </div>
               </div>
 
               <div className="mt-5 flex flex-wrap gap-2">
-                {['Profile Edits', 'Curriculum Access', 'Performance Questions'].map((item) => (
+                {helpTopics.map((item) => (
                   <span
                     key={item}
                     className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-white/62"
@@ -798,71 +862,103 @@ export default function StudentProfilePage() {
               </div>
 
               <div className="mt-5 grid grid-cols-2 gap-3">
-                <div className="rounded-[1.25rem] border border-white/8 bg-white/[0.03] p-4">
-                  <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/36">Response Time</div>
-                  <div className="mt-2 text-sm text-white">Within one working day</div>
-                </div>
-                <div className="rounded-[1.25rem] border border-white/8 bg-white/[0.03] p-4">
-                  <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/36">Profile Storage</div>
-                  <div className="mt-2 text-sm text-white">Saved in this browser</div>
-                </div>
+                {helpInsights.map((item) => (
+                  <div key={item.label} className="rounded-[1.2rem] border border-white/8 bg-white/[0.03] p-4">
+                    <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/36">{item.label}</div>
+                    <div className="mt-2 text-sm text-white">{item.value}</div>
+                  </div>
+                ))}
               </div>
 
-              <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <a
-                  href="mailto:support@yantra.ai?subject=Student%20Profile%20Support"
-                  className="rounded-[1.25rem] border border-white/10 bg-white/[0.05] px-4 py-4 transition-colors hover:bg-white/[0.09] cursor-pointer"
-                >
-                  <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/40">Contact</div>
-                  <div className="mt-2 font-display text-lg text-white">Email support</div>
-                  <div className="mt-1 text-sm text-white/50">Reach the support desk for manual help.</div>
-                </a>
+              <div className="mt-5 rounded-[1.35rem] border border-white/8 bg-black/24 p-4">
+                <div className="flex items-start gap-3">
+                  <div className="mt-0.5 flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/[0.06]">
+                    <Sparkles size={16} className="text-white/72" />
+                  </div>
 
-                <button
-                  type="button"
-                  className="rounded-[1.25rem] border border-white/10 bg-white/[0.05] px-4 py-4 text-left transition-colors hover:bg-white/[0.09] cursor-pointer"
-                  onClick={() => {
-                    focusSection(CURRICULUM_SECTION_ID, 'curriculum', 'Opened the curriculum section for review.');
-                  }}
-                >
-                  <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/40">Shortcut</div>
-                  <div className="mt-2 font-display text-lg text-white">Review curriculum</div>
-                  <div className="mt-1 text-sm text-white/50">Jump directly to the current mastery track.</div>
-                </button>
-
-                <button
-                  type="button"
-                  className="rounded-[1.25rem] border border-white/10 bg-white/[0.05] px-4 py-4 text-left transition-colors hover:bg-white/[0.09] cursor-pointer"
-                  onClick={() => {
-                    focusSection(PERFORMANCE_SECTION_ID, 'performance', 'Opened performance insights.');
-                  }}
-                >
-                  <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/40">Shortcut</div>
-                  <div className="mt-2 font-display text-lg text-white">Open performance</div>
-                  <div className="mt-1 text-sm text-white/50">Review the latest progress and activity signals.</div>
-                </button>
-
-                <button
-                  type="button"
-                  className="rounded-[1.25rem] border border-white/10 bg-white/[0.05] px-4 py-4 text-left transition-colors hover:bg-white/[0.09] cursor-pointer"
-                  onClick={() => {
-                    focusSection(PROFILE_SECTION_ID, 'overview', 'Returned to profile overview.');
-                  }}
-                >
-                  <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/40">Shortcut</div>
-                  <div className="mt-2 font-display text-lg text-white">Back to profile</div>
-                  <div className="mt-1 text-sm text-white/50">Return to the editable student record card.</div>
-                </button>
+                  <div className="flex-1">
+                    <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/38">Recommended Next Step</div>
+                    <div className="mt-2 font-display text-lg text-white">Review performance before opening a manual ticket.</div>
+                    <div className="mt-2 text-sm leading-relaxed text-white/54">
+                      Most progress questions are resolved faster when you check the live signals first, then escalate only
+                      if the record still looks wrong.
+                    </div>
+                    <button
+                      type="button"
+                      className="mt-4 inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/[0.05] px-4 py-2 font-mono text-[10px] uppercase tracking-[0.16em] text-white transition-colors hover:bg-white/[0.09] cursor-pointer"
+                      onClick={() => {
+                        focusSection(PERFORMANCE_SECTION_ID, 'performance', 'Opened performance insights.');
+                      }}
+                    >
+                      Open performance
+                      <ArrowUpRight size={14} />
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="rounded-2xl border border-white/8 bg-white/[0.04] p-5">
+          <div className="rounded-[1.8rem] border border-white/8 bg-white/[0.04] p-5">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <div className="font-display text-lg font-medium text-white">Quick Actions</div>
+                <p className="mt-2 text-sm leading-relaxed text-white/54">
+                  Fast shortcuts for the most common support moves without leaving the current page context.
+                </p>
+              </div>
+              <div className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-white/58">
+                4 Shortcuts
+              </div>
+            </div>
+
+            <div className="mt-5 grid grid-cols-1 gap-3">
+              <SupportActionCard
+                eyebrow="Manual Review"
+                title="Email support"
+                description="Reach the support desk when the record needs a human check or manual correction."
+                icon={Mail}
+                href="mailto:support@yantra.ai?subject=Student%20Profile%20Support"
+              />
+
+              <SupportActionCard
+                eyebrow="Shortcut"
+                title="Review curriculum"
+                description="Jump to the mastery track and confirm the learner is on the right path."
+                icon={BookOpen}
+                onClick={() => {
+                  focusSection(CURRICULUM_SECTION_ID, 'curriculum', 'Opened the curriculum section for review.');
+                }}
+              />
+
+              <SupportActionCard
+                eyebrow="Shortcut"
+                title="Open performance"
+                description="Inspect live momentum and recent activity before escalating a progress question."
+                icon={BarChart3}
+                onClick={() => {
+                  focusSection(PERFORMANCE_SECTION_ID, 'performance', 'Opened performance insights.');
+                }}
+              />
+
+              <SupportActionCard
+                eyebrow="Shortcut"
+                title="Back to profile"
+                description="Return to the editable student record when the issue is simply incorrect profile data."
+                icon={LayoutGrid}
+                onClick={() => {
+                  focusSection(PROFILE_SECTION_ID, 'overview', 'Returned to profile overview.');
+                }}
+              />
+            </div>
+          </div>
+
+          <div className="rounded-[1.8rem] border border-white/8 bg-white/[0.04] p-5">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <div className="font-display text-lg font-medium text-white">FAQs</div>
                 <p className="mt-2 text-sm leading-relaxed text-white/54">
-                  Quick answers to the most common student support questions.
+                  Quick answers to the questions people usually ask before they need a manual support handoff.
                 </p>
               </div>
               <div className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-white/58">
@@ -871,14 +967,22 @@ export default function StudentProfilePage() {
             </div>
 
             <div className="mt-5 space-y-3">
-              {helpFaqs.map((faq) => (
+              {helpFaqs.map((faq, index) => (
                 <details
                   key={faq.question}
                   className="group overflow-hidden rounded-[1.4rem] border border-white/8 bg-white/[0.03] p-4 transition-colors open:bg-white/[0.05]"
                 >
                   <summary className="flex cursor-pointer list-none items-center justify-between gap-4">
-                    <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/78">{faq.question}</span>
-                    <ChevronRight size={16} className="shrink-0 text-white/38 transition-transform duration-300 group-open:rotate-90 group-open:text-white/72" />
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-white/[0.05] font-mono text-[10px] uppercase tracking-[0.12em] text-white/54">
+                        {String(index + 1).padStart(2, '0')}
+                      </div>
+                      <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/78">{faq.question}</span>
+                    </div>
+                    <ChevronRight
+                      size={16}
+                      className="shrink-0 text-white/38 transition-transform duration-300 group-open:rotate-90 group-open:text-white/72"
+                    />
                   </summary>
                   <p className="mt-3 border-t border-white/6 pt-3 text-sm leading-relaxed text-white/56">{faq.answer}</p>
                 </details>
