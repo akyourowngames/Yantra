@@ -1,9 +1,11 @@
 node_modules/
 node_modules_broken/
 build/
+.next/
 dist/
 coverage/
 .DS_Store
 *.log
+*.tsbuildinfo
 .env*
 !.env.example

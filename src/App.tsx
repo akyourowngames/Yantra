@@ -1,11 +1,13 @@
+'use client';
+
 import { useEffect, useRef, useState } from 'react';
 import { motion, useInView, animate, useMotionValue, useSpring } from 'motion/react';
 import { Menu, X, BookOpen, Globe, Palette, ArrowRight } from 'lucide-react';
+import { ChatProvider, useChatWidget } from '@/src/components/chat/ChatWidget';
+import { yantraCtaPrompts } from '@/lib/yantra-chat';
 
 const productLinks = {
   home: '#about',
-  demo: '#contact',
-  waitlist: '#contact',
 };
 
 const accessDetails = {
@@ -114,6 +116,7 @@ function FluidBackground() {
 }
 
 function Nav() {
+  const { openChat } = useChatWidget();
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -151,9 +154,13 @@ function Nav() {
                 {link.label}
               </a>
             ))}
-            <a href="#contact" className="ml-4 px-6 py-2 rounded-full border border-white/20 bg-white/5 backdrop-blur-md text-xs font-bold tracking-widest uppercase hover:bg-white/10 transition-colors hoverable">
+            <button
+              type="button"
+              className="ml-4 px-6 py-2 rounded-full border border-white/20 bg-white/5 backdrop-blur-md text-xs font-bold tracking-widest uppercase hover:bg-white/10 transition-colors hoverable"
+              onClick={() => openChat({ message: yantraCtaPrompts.waitlist })}
+            >
               Join Waitlist
-            </a>
+            </button>
           </div>
 
           <button className="md:hidden text-text hoverable" onClick={() => setMobileMenuOpen(true)}>
@@ -188,16 +195,19 @@ function Nav() {
                 {link.label}
               </motion.a>
             ))}
-            <motion.a
-              href="#contact"
+            <motion.button
+              type="button"
               className="mt-8 px-8 py-4 rounded-full border border-white/20 bg-white/5 text-sm font-bold tracking-widest uppercase hover:bg-white/10 transition-colors hoverable"
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: links.length * 0.1 }}
-              onClick={() => setMobileMenuOpen(false)}
+              onClick={() => {
+                setMobileMenuOpen(false);
+                openChat({ message: yantraCtaPrompts.waitlist });
+              }}
             >
               Join Waitlist
-            </motion.a>
+            </motion.button>
           </div>
         </motion.div>
       )}
@@ -206,6 +216,7 @@ function Nav() {
 }
 
 function Hero() {
+  const { openChat } = useChatWidget();
   const title = 'YANTRA';
 
   return (
@@ -249,9 +260,13 @@ function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         >
-          <a href="#contact" className="w-full sm:w-auto px-10 py-5 bg-white text-black rounded-full font-bold text-sm tracking-widest uppercase hoverable hover:scale-105 transition-transform duration-300 text-center">
+          <button
+            type="button"
+            className="w-full sm:w-auto px-10 py-5 bg-white text-black rounded-full font-bold text-sm tracking-widest uppercase hoverable hover:scale-105 transition-transform duration-300 text-center"
+            onClick={() => openChat({ message: yantraCtaPrompts.requestAccess })}
+          >
             Request Access &rarr;
-          </a>
+          </button>
           <a href="#about" className="w-full sm:w-auto px-10 py-5 bg-white/5 border border-white/20 backdrop-blur-md rounded-full font-bold text-sm tracking-widest uppercase hoverable hover:bg-white/10 transition-colors duration-300 text-center">
             Explore Yantra
           </a>
@@ -467,6 +482,22 @@ function Gallery() {
 }
 
 function Contact() {
+  const { openChat } = useChatWidget();
+  const [form, setForm] = useState({
+    name: '',
+    email: '',
+    message: '',
+  });
+
+  const accessMessage = [
+    yantraCtaPrompts.requestAccess,
+    form.name ? `Name: ${form.name}` : null,
+    form.email ? `Email: ${form.email}` : null,
+    form.message ? `Details: ${form.message}` : null,
+  ]
+    .filter(Boolean)
+    .join('\n');
+
   return (
     <section id="contact" className="py-32 px-6 max-w-7xl mx-auto border-t border-white/10 relative">
       <div className="text-[12rem] md:text-[20rem] font-heading text-white/[0.03] absolute top-0 right-0 pointer-events-none leading-none select-none text-right">
@@ -502,22 +533,46 @@ function Contact() {
           viewport={{ once: true, margin: '-100px' }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
           className="flex flex-col gap-8"
-          onSubmit={(e) => e.preventDefault()}
+          onSubmit={(event) => {
+            event.preventDefault();
+            openChat({ message: accessMessage });
+          }}
         >
           <div className="relative">
-            <input type="text" id="name" placeholder=" " className="input-field w-full bg-transparent border-b border-border py-3 text-text focus:outline-none focus:border-accent transition-colors peer hoverable" />
+            <input
+              type="text"
+              id="name"
+              placeholder=" "
+              value={form.name}
+              onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
+              className="input-field w-full bg-transparent border-b border-border py-3 text-text focus:outline-none focus:border-accent transition-colors peer hoverable"
+            />
             <label htmlFor="name" className="input-label absolute left-0 top-3 text-muted font-mono text-sm transition-all duration-300 pointer-events-none">
               Full Name
             </label>
           </div>
           <div className="relative">
-            <input type="email" id="email" placeholder=" " className="input-field w-full bg-transparent border-b border-border py-3 text-text focus:outline-none focus:border-accent transition-colors peer hoverable" />
+            <input
+              type="email"
+              id="email"
+              placeholder=" "
+              value={form.email}
+              onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))}
+              className="input-field w-full bg-transparent border-b border-border py-3 text-text focus:outline-none focus:border-accent transition-colors peer hoverable"
+            />
             <label htmlFor="email" className="input-label absolute left-0 top-3 text-muted font-mono text-sm transition-all duration-300 pointer-events-none">
               Work or Personal Email
             </label>
           </div>
           <div className="relative">
-            <textarea id="message" rows={4} placeholder=" " className="input-field w-full bg-transparent border-b border-border py-3 text-text focus:outline-none focus:border-accent transition-colors peer hoverable resize-none" />
+            <textarea
+              id="message"
+              rows={4}
+              placeholder=" "
+              value={form.message}
+              onChange={(event) => setForm((current) => ({ ...current, message: event.target.value }))}
+              className="input-field w-full bg-transparent border-b border-border py-3 text-text focus:outline-none focus:border-accent transition-colors peer hoverable resize-none"
+            />
             <label htmlFor="message" className="input-label absolute left-0 top-3 text-muted font-mono text-sm transition-all duration-300 pointer-events-none">
               Tell us if you are a learner, institution, or hiring partner
             </label>
@@ -533,6 +588,8 @@ function Contact() {
 }
 
 function Footer() {
+  const { openChat } = useChatWidget();
+
   return (
     <footer className="py-12 px-6 border-t border-white/10 mt-32 relative overflow-hidden">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6 relative z-10">
@@ -543,12 +600,20 @@ function Footer() {
           <a href={productLinks.home} className="hover:text-white transition-colors hoverable">
             Platform
           </a>
-          <a href={productLinks.demo} className="hover:text-white transition-colors hoverable">
+          <button
+            type="button"
+            className="hover:text-white transition-colors hoverable"
+            onClick={() => openChat({ message: yantraCtaPrompts.demo })}
+          >
             Demo
-          </a>
-          <a href={productLinks.waitlist} className="hover:text-white transition-colors hoverable">
+          </button>
+          <button
+            type="button"
+            className="hover:text-white transition-colors hoverable"
+            onClick={() => openChat({ message: yantraCtaPrompts.waitlist })}
+          >
             Waitlist
-          </a>
+          </button>
         </div>
         <div className="font-mono text-xs text-muted/50 uppercase tracking-widest">&copy; {new Date().getFullYear()} Yantra. AI-native learning, built for outcomes.</div>
       </div>
@@ -564,20 +629,22 @@ export default function App() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-transparent text-text selection:bg-accent selection:text-white">
-      <FluidBackground />
-      <CustomCursor />
-      <Nav />
-      <main>
-        <Hero />
-        <Ticker />
-        <About />
-        <Stats />
-        <Academics />
-        <Gallery />
-        <Contact />
-      </main>
-      <Footer />
-    </div>
+    <ChatProvider>
+      <div className="min-h-screen bg-transparent text-text selection:bg-accent selection:text-white">
+        <FluidBackground />
+        <CustomCursor />
+        <Nav />
+        <main>
+          <Hero />
+          <Ticker />
+          <About />
+          <Stats />
+          <Academics />
+          <Gallery />
+          <Contact />
+        </main>
+        <Footer />
+      </div>
+    </ChatProvider>
   );
 }

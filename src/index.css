@@ -9,6 +9,7 @@
   --color-accent-glow: rgba(255, 255, 255, 0.15);
   --color-border: rgba(255, 255, 255, 0.1);
 
+  --font-display: "Space Grotesk", sans-serif;
   --font-heading: "Bebas Neue", sans-serif;
   --font-body: "Inter", sans-serif;
   --font-mono: "JetBrains Mono", monospace;
