@@ -24,8 +24,8 @@ const ExperienceContext = createContext<ExperienceContextValue | null>(null);
 const smoothEase = (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t));
 
 function SharedCursor({ enabled }: { enabled: boolean }) {
-  const innerSize = 14;
-  const outerSize = 40;
+  const innerSize = 10;
+  const outerSize = 34;
   const outerOffset = (outerSize - innerSize) / 2;
   const interactiveSelector =
     'a, button, input, textarea, select, label, summary, .hoverable, [role="button"]';
@@ -60,9 +60,9 @@ function SharedCursor({ enabled }: { enabled: boolean }) {
 
     const syncAppearance = () => {
       innerOpacity.set(isVisible ? 1 : 0);
-      outerOpacity.set(isVisible ? (isHovered ? 0.76 : 0.3) : 0);
-      innerScale.set(isVisible ? (isHovered ? 2.1 : 1) : 0.7);
-      outerScale.set(isHovered ? 1.08 : 1);
+      outerOpacity.set(isVisible ? (isHovered ? 0.42 : 0.18) : 0);
+      innerScale.set(isVisible ? (isHovered ? 1.3 : 1) : 0.7);
+      outerScale.set(isHovered ? 1.06 : 1);
     };
 
     const updatePosition = (event: PointerEvent) => {
@@ -122,7 +122,7 @@ function SharedCursor({ enabled }: { enabled: boolean }) {
     <>
       <motion.div
         aria-hidden="true"
-        className="pointer-events-none fixed left-0 top-0 z-[120] hidden rounded-full bg-white mix-blend-difference md:block"
+        className="pointer-events-none fixed left-0 top-0 z-[120] hidden rounded-full bg-white/92 shadow-[0_0_18px_rgba(255,255,255,0.18)] md:block"
         style={{
           x: cursorX,
           y: cursorY,
@@ -135,7 +135,7 @@ function SharedCursor({ enabled }: { enabled: boolean }) {
       />
       <motion.div
         aria-hidden="true"
-        className="pointer-events-none fixed left-0 top-0 z-[119] hidden rounded-full border border-white/18 md:block"
+        className="pointer-events-none fixed left-0 top-0 z-[119] hidden rounded-full border border-white/20 bg-white/[0.02] md:block"
         style={{
           x: cursorX,
           y: cursorY,

@@ -33,13 +33,6 @@ type NavItem = {
   active?: boolean;
 };
 
-type TopNavItem = {
-  label: string;
-  href?: string;
-  action?: 'roster' | 'curriculum' | 'performance';
-  active?: boolean;
-};
-
 type ActivityCard = {
   title: string;
   body: string;
@@ -68,13 +61,6 @@ const PROFILE_SECTION_ID = 'profile-overview';
 const ROSTER_SECTION_ID = 'student-roster';
 const PERFORMANCE_SECTION_ID = 'performance-insights';
 const CURRICULUM_SECTION_ID = 'curriculum-track';
-
-const topNavItems: TopNavItem[] = [
-  { label: 'Dashboard', href: '/dashboard' },
-  { label: 'Students', action: 'roster', active: true },
-  { label: 'Academy', action: 'curriculum' },
-  { label: 'Reports', action: 'performance' },
-];
 
 const sideNavItems: NavItem[] = [
   { label: 'Overview', icon: LayoutGrid, action: 'overview', active: true },
@@ -549,20 +535,6 @@ export default function StudentProfilePage({
     }
   };
 
-  const handleTopNavAction = (action: NonNullable<TopNavItem['action']>) => {
-    if (action === 'curriculum') {
-      focusSection(CURRICULUM_SECTION_ID, 'curriculum', 'Jumped to curriculum track.');
-      return;
-    }
-
-    if (action === 'performance') {
-      focusSection(PERFORMANCE_SECTION_ID, 'performance', 'Jumped to performance insights.');
-      return;
-    }
-
-    openRosterView();
-  };
-
   const handleSaveProfile = async (nextProfile: StudentProfile) => {
     try {
       await persistProfile(nextProfile, 'Student profile saved to your Yantra account.');
@@ -575,69 +547,20 @@ export default function StudentProfilePage({
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-black text-white selection:bg-white selection:text-black [cursor:default]">
       <YantraAmbientBackground />
-
-      <nav className="fixed left-0 top-0 z-50 flex h-20 w-full items-center justify-between border-b border-white/8 bg-black/72 px-4 backdrop-blur-2xl md:px-8">
-        <Link href="/dashboard" className="font-display text-2xl font-bold tracking-tight text-white uppercase cursor-pointer">
-          YANTRA
-        </Link>
-
-        <div className="hidden items-center gap-8 md:flex">
-          {topNavItems.map((item) =>
-            item.href ? (
-              <Link
-                key={item.label}
-                href={item.href}
-                className={`border-b-2 pb-1 font-display tracking-tight transition-colors cursor-pointer ${
-                  item.active ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'
-                }`}
-              >
-                {item.label}
-              </Link>
-            ) : (
-              <button
-                key={item.label}
-                type="button"
-                className={`border-b-2 pb-1 font-display tracking-tight transition-colors cursor-pointer ${
-                  activeSection === item.action || (item.action === 'roster' && activeSection === 'overview')
-                    ? 'border-white text-white'
-                    : 'border-transparent text-white/50 hover:text-white/80'
-                }`}
-                onClick={() => item.action && handleTopNavAction(item.action)}
-              >
-                {item.label}
-              </button>
-            ),
-          )}
-        </div>
-
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            className="rounded-full p-2 text-white/50 transition-all hover:bg-white/5 hover:text-white cursor-pointer"
-            aria-label="Notifications"
-            aria-expanded={activePanel === 'notifications'}
-            onClick={() => handlePanelToggle('notifications')}
+      <header className="fixed left-0 top-0 z-40 w-full border-b border-white/8 bg-black/72 px-4 py-4 backdrop-blur-2xl lg:hidden">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
+          <Link href="/dashboard" className="font-display text-2xl font-bold tracking-tight text-white uppercase cursor-pointer">
+            YANTRA
+          </Link>
+          <Link
+            href="/dashboard"
+            className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 font-mono text-[10px] uppercase tracking-[0.18em] text-white/78 transition-colors hover:bg-white/[0.08] cursor-pointer"
           >
-            <Bell size={20} />
-          </button>
-          <button
-            type="button"
-            className="rounded-full p-2 text-white/50 transition-all hover:bg-white/5 hover:text-white cursor-pointer"
-            aria-label="Settings"
-            aria-expanded={activePanel === 'settings'}
-            onClick={() => handlePanelToggle('settings')}
-          >
-            <Settings2 size={20} />
-          </button>
-          <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-white/[0.05]">
-            <img
-              className="h-full w-full object-cover"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuC4CWSeYvprUHrYzSPufJblSA90Y4UJou5ZbeZwZAHcqrbYDbnvC6FH11WQlj8zoOhtN0MjRZTkQCbiB_JhePugg2KI93jCi7Eup9I4PaUTXffgCxFHdn8mPZgMDQ12459nME-9oqlfYirEFgdb_St_sFpIPxSbHefu_RNM6NJbBDcEf6VUwOaK_D6-pbuj6kDviL-Cyxb4qZ8wJCCKNdfGx6T1uNjOuD3TdNmgKy8dp51aDJvelS138ftcduB-2q3B2ysq5_14_e2h"
-              alt="Professional male portrait with a minimalist background and soft studio lighting."
-            />
-          </div>
+            <Grid2x2 size={14} />
+            Dashboard
+          </Link>
         </div>
-      </nav>
+      </header>
 
       {activePanel === 'notifications' && (
         <PanelShell title="Updates" eyebrow="Notifications" onClose={() => setActivePanel(null)}>
@@ -880,7 +803,7 @@ export default function StudentProfilePage({
         </PanelShell>
       )}
 
-      <aside className="fixed left-0 top-0 z-30 hidden h-full w-64 flex-col border-r border-white/8 bg-black/62 px-4 pb-8 pt-28 backdrop-blur-2xl lg:flex">
+      <aside className="fixed left-0 top-0 z-30 hidden h-full w-64 flex-col border-r border-white/8 bg-black/62 px-4 pb-8 pt-10 backdrop-blur-2xl lg:flex">
         <div className="mb-12 flex flex-col gap-2 px-2">
           <div className="font-display text-xl font-bold text-white">YANTRA</div>
           <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/40">Institutional Portal</div>
@@ -909,7 +832,7 @@ export default function StudentProfilePage({
         </div>
       </aside>
 
-      <main className="relative z-10 min-h-screen px-4 pb-12 pt-28 md:px-12 lg:pl-64">
+      <main className="relative z-10 min-h-screen px-4 pb-16 pt-24 md:px-10 md:pt-28 lg:pl-72 lg:pr-10 lg:pt-10">
         <div className="mx-auto max-w-6xl">
           {statusMessage ? (
             <div className="mb-6 rounded-full border border-white/10 bg-white/[0.05] px-4 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-white/72 shadow-[0_16px_36px_rgba(0,0,0,0.16)]">
@@ -917,33 +840,85 @@ export default function StudentProfilePage({
             </div>
           ) : null}
 
-          <div className="mb-8 flex flex-wrap items-center gap-2 font-mono text-[10px] uppercase tracking-[0.2em] text-white/40">
-            <Link href="/dashboard" className="cursor-pointer transition-colors hover:text-white/70">
-              Dashboard
-            </Link>
-            <ChevronRight size={14} />
-              <button
-                type="button"
-                className="cursor-pointer transition-colors hover:text-white/70"
-                onClick={() => openRosterView('Opened roster view.')}
-              >
-                Students
-              </button>
-            <ChevronRight size={14} />
-            <span className="text-white/80">{profile.name}</span>
-          </div>
-
           <section className="mb-12" id={PROFILE_SECTION_ID}>
-            <div className="mb-5 inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/[0.045] px-5 py-2 backdrop-blur-xl">
-              <span className="h-2.5 w-2.5 rounded-full bg-white shadow-[0_0_16px_rgba(255,255,255,0.72)]" />
-              <span className="font-mono text-[10px] uppercase tracking-[0.28em] text-white/42">Student Identity / Synced Theme</span>
+            <div className="flex flex-col gap-8 xl:flex-row xl:items-start xl:justify-between">
+              <div className="max-w-3xl">
+                <div className="mb-6 flex flex-wrap items-center gap-2 font-mono text-[10px] uppercase tracking-[0.2em] text-white/40">
+                  <Link href="/dashboard" className="cursor-pointer transition-colors hover:text-white/70">
+                    Dashboard
+                  </Link>
+                  <ChevronRight size={14} />
+                  <button
+                    type="button"
+                    className="cursor-pointer transition-colors hover:text-white/70"
+                    onClick={() => openRosterView('Opened roster view.')}
+                  >
+                    Students
+                  </button>
+                  <ChevronRight size={14} />
+                  <span className="text-white/80">{profile.name}</span>
+                </div>
+
+                <div className="mb-5 inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/[0.045] px-5 py-2 backdrop-blur-xl">
+                  <span className="h-2.5 w-2.5 rounded-full bg-white shadow-[0_0_10px_rgba(255,255,255,0.38)]" />
+                  <span className="font-mono text-[10px] uppercase tracking-[0.28em] text-white/42">Student Identity / Synced Theme</span>
+                </div>
+                <h1 className="font-display text-5xl font-bold tracking-tight text-white md:text-7xl">Student Profile</h1>
+                <p className="mt-4 max-w-xl text-base font-light leading-relaxed text-white/58">
+                  Academic tracking and personal identity management for the Yantra ecosystem. Manage core student data and
+                  skill progression from a single institutional view.
+                </p>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-3 xl:max-w-md xl:justify-end">
+                <Link
+                  href="/dashboard"
+                  className="inline-flex items-center gap-3 rounded-full border border-white/12 bg-white/[0.04] px-5 py-3 font-mono text-[11px] uppercase tracking-[0.2em] text-white/78 transition-colors hover:bg-white/[0.08] cursor-pointer"
+                >
+                  <Grid2x2 size={16} />
+                  Back to Dashboard
+                </Link>
+                <button
+                  type="button"
+                  className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-3 font-mono text-[10px] uppercase tracking-[0.16em] text-white/70 transition-colors hover:bg-white/[0.08] cursor-pointer"
+                  aria-label="Notifications"
+                  aria-expanded={activePanel === 'notifications'}
+                  onClick={() => handlePanelToggle('notifications')}
+                >
+                  <Bell size={14} />
+                  Updates
+                </button>
+                <button
+                  type="button"
+                  className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-3 font-mono text-[10px] uppercase tracking-[0.16em] text-white/70 transition-colors hover:bg-white/[0.08] cursor-pointer"
+                  aria-label="Settings"
+                  aria-expanded={activePanel === 'settings'}
+                  onClick={() => handlePanelToggle('settings')}
+                >
+                  <Settings2 size={14} />
+                  Profile Tools
+                </button>
+              </div>
             </div>
-            <h1 className="font-display text-5xl font-bold tracking-tight text-white md:text-7xl">Student Profile</h1>
-            <p className="mt-4 max-w-xl text-base font-light leading-relaxed text-white/58">
-              Academic tracking and personal identity management for the Yantra ecosystem. Manage core student data and
-              skill progression from a single institutional view.
-            </p>
           </section>
+
+          <div className="mb-10 flex gap-3 overflow-x-auto pb-2 lg:hidden">
+            {sideNavItems.map((item) => (
+              <button
+                key={item.label}
+                type="button"
+                className={`inline-flex shrink-0 items-center gap-2 rounded-full border px-4 py-2 font-mono text-[10px] uppercase tracking-[0.16em] transition-colors cursor-pointer ${
+                  item.action && activeSection === item.action
+                    ? 'border-white/12 bg-white/[0.09] text-white'
+                    : 'border-white/8 bg-white/[0.04] text-white/58 hover:bg-white/[0.08] hover:text-white/80'
+                }`}
+                onClick={() => item.action && handleNavAction(item.action)}
+              >
+                <item.icon size={14} />
+                {item.label}
+              </button>
+            ))}
+          </div>
 
           <div className="grid grid-cols-1 gap-12 lg:grid-cols-12">
             <StudentProfileCard ref={profileCardRef} profile={profile} onSave={handleSaveProfile} />
@@ -968,17 +943,8 @@ export default function StudentProfilePage({
             </section>
           </div>
 
-          <div className="mt-12 flex flex-wrap items-center gap-4">
-            <Link
-              href="/dashboard"
-              className="inline-flex items-center gap-3 rounded-full border border-white/12 bg-white/[0.04] px-5 py-3 font-mono text-[11px] uppercase tracking-[0.2em] text-white/78 transition-colors hover:bg-white/[0.08] cursor-pointer"
-            >
-              <Grid2x2 size={16} />
-              Back to Dashboard
-            </Link>
-            <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/34">
-              Student record edits now sync to your Yantra account.
-            </div>
+          <div className="mt-12 border-t border-white/6 pt-6 font-mono text-[10px] uppercase tracking-[0.18em] text-white/34">
+            Student record edits now sync to your Yantra account.
           </div>
         </div>
       </main>

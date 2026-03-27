@@ -75,12 +75,10 @@ const StudentProfileCard = forwardRef<StudentProfileCardHandle, StudentProfileCa
 
   return (
     <section className="group relative lg:col-span-5">
-      <div className="absolute -inset-10 rounded-full bg-white/[0.06] opacity-0 blur-[110px] transition-opacity duration-700 group-hover:opacity-100" />
-
       <div className={profileCardSurfaceClassName}>
         <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/18 to-transparent" />
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(255,255,255,0.08)_0%,transparent_52%)]" />
-        <div className="pointer-events-none absolute right-[-16%] top-[-14%] h-36 w-36 rounded-full bg-white/[0.08] blur-[80px]" />
+        <div className="pointer-events-none absolute right-[-16%] top-[-14%] h-32 w-32 rounded-full bg-white/[0.045] blur-[72px]" />
 
         {!isEditing ? (
           <div className="relative space-y-8">

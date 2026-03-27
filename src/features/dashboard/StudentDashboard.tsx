@@ -408,7 +408,7 @@ function HeroSection({ firstName }: Pick<StudentDashboardProps, 'firstName'>) {
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
       >
         <div className="inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/[0.045] px-5 py-2 backdrop-blur-xl">
-          <span className="h-2.5 w-2.5 rounded-full bg-white shadow-[0_0_16px_rgba(255,255,255,0.75)] animate-pulse" />
+          <span className="h-2.5 w-2.5 rounded-full bg-white shadow-[0_0_12px_rgba(255,255,255,0.42)]" />
           <span className="font-mono text-[10px] uppercase tracking-[0.32em] text-white/42">Student OS / System Active</span>
         </div>
 
@@ -955,7 +955,7 @@ function YantraAiSection() {
       <div className="grid gap-10 md:grid-cols-12 md:gap-12">
         <div className="space-y-6 md:col-span-4">
           <div className="flex items-center gap-3">
-            <span className="h-3 w-3 rounded-full bg-white shadow-[0_0_14px_rgba(255,255,255,0.72)] animate-pulse" />
+            <span className="h-3 w-3 rounded-full bg-white shadow-[0_0_12px_rgba(255,255,255,0.38)]" />
             <h2 className="font-display text-3xl font-medium tracking-tight text-white md:text-4xl">Yantra AI</h2>
           </div>
 
