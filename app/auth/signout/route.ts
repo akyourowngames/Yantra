@@ -8,5 +8,5 @@ export async function GET() {
     await supabase.auth.signOut();
   }
 
-  redirect('/login?message=You%20have%20been%20signed%20out.&kind=info');
+  redirect('/login?message=Secure%20session%20closed.%20Return%20when%20you%20are%20ready%20to%20continue.&kind=info');
 }

@@ -1,76 +1,105 @@
 # Dashboard
 
-## Route
+## Routes And Ownership
 
 - `/dashboard`
 - `/dashboard/student-profile`
-- Entry file: `app/dashboard/page.tsx`
-- Main implementation: `src/features/dashboard/StudentDashboard.tsx`
-- Student profile entry file: `app/dashboard/student-profile/page.tsx`
+- Dashboard entry: `app/dashboard/page.tsx`
+- Dashboard implementation: `src/features/dashboard/StudentDashboard.tsx`
+- Student profile entry: `app/dashboard/student-profile/page.tsx`
 - Student profile implementation: `src/features/dashboard/StudentProfilePage.tsx`
 
-## Purpose
+## Route Protection
 
-The dashboard is the student-facing product concept layer.
+Both routes are protected server-side.
 
-It currently showcases:
+Each route:
 
-- progress summary
-- roadmap overview
+- checks whether Supabase env vars are configured
+- reads the authenticated learner through `getAuthenticatedProfile()`
+- redirects unauthenticated requests to `/login`
+
+This means the dashboard is no longer just a public concept page.
+
+## `/dashboard`
+
+### Purpose
+
+The main dashboard is the protected learner home surface. It mixes real identity data with mostly static progress and learning content.
+
+### What is dynamic today
+
+- learner full name
+- learner first name
+- learner email
+
+These values come from the authenticated Supabase profile flow.
+
+### What is still static today
+
+- overview cards
+- momentum bars
 - skill cards
-- practice room entry points
-- embedded Yantra AI actions
-- a dedicated student profile management screen
+- room cards
+- curriculum nodes
+- AI quick prompts
 
-## Main Sections
+### Embedded behavior
 
-- dashboard navigation
-- hero section with progress card
-- overview section
-- skills section
-- practice rooms section
-- Yantra AI section
-- footer
+- chat entry points open the shared Yantra chat modal
+- navigation links into `/dashboard/student-profile`
+- the visual surface is polished, but it is still largely presentation data
 
-## Student Profile Screen
+## `/dashboard/student-profile`
 
-- fixed institutional top navigation and side navigation
-- editable student identity card with verified badge and progress slider
-- supporting activity cards for performance and scheduling
-- curriculum progression rail with complete, active, and locked states
-- interactive nav, support, roster, settings, and notifications controls
-- student profile edits persist in browser local storage on the client
+### Purpose
 
-## Data Model Today
+This is the real persisted dashboard surface in the current product. It lets the authenticated learner review and update their profile record.
 
-The dashboard is currently driven by hardcoded arrays inside the component:
+### Current profile fields
 
-- `overviewCards`
-- `skills`
-- `rooms`
-- `aiPrompts`
+- `name`
+- `classDesignation`
+- `skillLevel`
+- `progress`
+- `academicYear`
 
-This means the dashboard is visually complete enough for demos, but not yet connected to a backend or user profile.
+### Persistence behavior
+
+- the server seeds a default profile row on first access if one does not exist
+- the page saves changes through `PUT /api/profile`
+- the payload is validated with `normalizeStudentProfileInput()`
+- the stored values are sanitized before upsert
+
+### Supporting UI
+
+The page also includes:
+
+- overview, roster, curriculum, and performance sections
+- help and support shortcuts
+- settings/notifications/help panels
+- a direct logout path through `/auth/signout`
+
+Only the profile record is persisted. The surrounding curriculum, roster, and performance content is still static UI copy.
 
 ## Current Strengths
 
-- strong visual hierarchy
-- section-based composition
-- route exists as a real deployed page
-- AI actions are wired into the shared chat widget
+- protected routes are real
+- learner identity and profile are backed by Supabase
+- the profile screen exposes a genuine save path
+- dashboard and profile surfaces share a consistent visual system
 
 ## Current Limitations
 
-- no auth
-- no dynamic student data
-- no persistence
-- no room engine behind the room cards
-- no unlock logic or progression system
+- no dynamic room engine
+- no dynamic curriculum model
+- no real unlock logic
+- no analytics or event tracking
+- no tests around protected-route or profile-save behavior
 
-## Recommended Future Work
+## Recommended Next Work
 
-- move dashboard data into a typed server/client data contract
-- back it with a student profile
-- connect room status to real capability
-- add room-specific deep links once rooms exist
-- split static config from component rendering logic
+- extract hardcoded dashboard data into typed server/client contracts
+- add tests for `/api/profile` and route protection
+- connect dashboard progress and rooms to persisted learner state
+- replace static curriculum and performance sections with real data models

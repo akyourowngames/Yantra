@@ -3,7 +3,8 @@
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { motion, animate, useInView } from 'motion/react';
-import { ArrowRight, Menu, X } from 'lucide-react';
+import { ArrowRight, BookOpen, Globe, Menu, Palette, X } from 'lucide-react';
+import { AccessRequestForm } from '@/src/features/access/AccessRequestForm';
 import { ChatProvider, useChatWidget } from '@/src/features/chat/ChatWidget';
 import { useOverlayLock } from '@/src/features/motion/ExperienceProvider';
 import { yantraCtaPrompts } from '@/src/features/chat/yantra-chat';
@@ -63,7 +64,7 @@ function Nav() {
     <>
       <motion.nav
         className={`fixed top-0 z-50 w-full transition-all duration-500 ${
-          scrolled ? 'border-b border-white/10 bg-black/80 backdrop-blur-xl' : 'bg-transparent py-2'
+          scrolled ? 'border-b border-white/10 bg-black/80 backdrop-blur-xl' : 'bg-transparent'
         }`}
         initial={{ y: -100 }}
         animate={{ y: 0 }}
@@ -163,7 +164,7 @@ function Hero() {
   const title = 'YANTRA';
 
   return (
-    <section className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-6 pb-32 pt-32">
+    <section className="relative flex min-h-[100svh] flex-col items-center justify-center overflow-hidden px-6 pb-28 pt-28 sm:min-h-screen sm:pb-32 sm:pt-32">
       <div className="z-10 mx-auto flex w-full max-w-5xl flex-col items-center text-center">
         <motion.div
           className="mb-12 rounded-full border border-white/10 bg-white/5 px-6 py-2 text-center font-mono text-xs uppercase tracking-[0.2em] text-muted backdrop-blur-md md:mb-16 md:text-sm"
@@ -222,7 +223,7 @@ function Hero() {
         </motion.p>
 
         <motion.div
-          className="absolute bottom-8 flex flex-col items-center gap-4"
+          className="absolute bottom-[calc(env(safe-area-inset-bottom)+1.5rem)] flex flex-col items-center gap-4 sm:bottom-8"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.2, duration: 1 }}
@@ -445,67 +446,6 @@ function Gallery() {
 
 function Contact() {
   const { openChat } = useChatWidget();
-  const [form, setForm] = useState({
-    name: '',
-    email: '',
-    message: '',
-  });
-  const [requestState, setRequestState] = useState<{
-    kind: 'error' | 'info' | 'success';
-    message: string;
-  } | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const accessMessage = [
-    yantraCtaPrompts.requestAccess,
-    form.name ? `Name: ${form.name}` : null,
-    form.email ? `Email: ${form.email}` : null,
-    form.message ? `Details: ${form.message}` : null,
-  ]
-    .filter(Boolean)
-    .join('\n');
-
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setIsSubmitting(true);
-    setRequestState({
-      kind: 'info',
-      message: 'Sending your access request...',
-    });
-
-    try {
-      const response = await fetch('/api/access-requests', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(form),
-      });
-
-      const payload = (await response.json()) as { error?: string; message?: string };
-
-      if (!response.ok) {
-        throw new Error(payload.error || 'Yantra could not submit your access request right now.');
-      }
-
-      setForm({
-        name: '',
-        email: '',
-        message: '',
-      });
-      setRequestState({
-        kind: 'success',
-        message: payload.message || 'Your access request has been received. We will reach out soon.',
-      });
-    } catch (error) {
-      setRequestState({
-        kind: 'error',
-        message: error instanceof Error ? error.message : 'Yantra could not submit your access request right now.',
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   return (
     <section id="contact" className="relative mx-auto max-w-7xl border-t border-white/10 px-6 py-32 scroll-mt-28">
@@ -534,105 +474,25 @@ function Contact() {
               {marketingAccessDetails.status}
             </p>
           </div>
+
+          <button
+            type="button"
+            className="hoverable mt-10 inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/[0.04] px-6 py-3 font-mono text-[11px] uppercase tracking-[0.2em] text-white/78 transition-colors hover:bg-white/[0.08]"
+            onClick={() => openChat({ message: yantraCtaPrompts.requestAccess })}
+          >
+            Ask Yantra First <ArrowRight size={14} />
+          </button>
         </motion.div>
 
-        <motion.form
+        <motion.div
           initial={{ x: 50, opacity: 0 }}
           whileInView={{ x: 0, opacity: 1 }}
           viewport={{ once: true, margin: '-100px' }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
           className="flex flex-col gap-8"
-          onSubmit={handleSubmit}
         >
-          <div className="relative">
-            <input
-              type="text"
-              id="name"
-              name="name"
-              placeholder=" "
-              value={form.name}
-              required
-              autoComplete="name"
-              onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
-              className="input-field hoverable peer w-full border-b border-border bg-transparent py-3 text-white transition-colors focus:border-accent focus:outline-none"
-            />
-            <label
-              htmlFor="name"
-              className="input-label pointer-events-none absolute left-0 top-3 font-mono text-sm text-muted transition-all duration-300"
-            >
-              Full Name
-            </label>
-          </div>
-          <div className="relative">
-            <input
-              type="email"
-              id="email"
-              name="email"
-              placeholder=" "
-              value={form.email}
-              required
-              autoComplete="email"
-              onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))}
-              className="input-field hoverable peer w-full border-b border-border bg-transparent py-3 text-white transition-colors focus:border-accent focus:outline-none"
-            />
-            <label
-              htmlFor="email"
-              className="input-label pointer-events-none absolute left-0 top-3 font-mono text-sm text-muted transition-all duration-300"
-            >
-              Work or Personal Email
-            </label>
-          </div>
-          <div className="relative">
-            <textarea
-              id="message"
-              name="message"
-              rows={4}
-              placeholder=" "
-              value={form.message}
-              onChange={(event) => setForm((current) => ({ ...current, message: event.target.value }))}
-              className="input-field hoverable peer w-full resize-none border-b border-border bg-transparent py-3 text-white transition-colors focus:border-accent focus:outline-none"
-            />
-            <label
-              htmlFor="message"
-              className="input-label pointer-events-none absolute left-0 top-3 font-mono text-sm text-muted transition-all duration-300"
-            >
-              Tell us if you are a learner, institution, or hiring partner
-            </label>
-          </div>
-
-          {requestState ? (
-            <div
-              className={`rounded-[1.4rem] border px-4 py-4 text-sm leading-relaxed ${
-                requestState.kind === 'error'
-                  ? 'border-red-300/30 bg-red-400/10 text-red-100'
-                  : requestState.kind === 'success'
-                    ? 'border-white/12 bg-white/[0.05] text-white/82'
-                    : 'border-white/10 bg-black/20 text-white/68'
-              }`}
-              aria-live="polite"
-            >
-              {requestState.message}
-            </div>
-          ) : null}
-
-          <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-center">
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="hoverable flex items-center justify-center gap-2 rounded-full bg-white px-8 py-4 text-sm font-bold uppercase tracking-widest text-black transition-transform duration-300 hover:scale-105 disabled:cursor-not-allowed disabled:bg-white/40"
-            >
-              {isSubmitting ? 'Submitting...' : 'Request Access'} <ArrowRight size={16} />
-            </button>
-
-            <button
-              type="button"
-              className="hoverable rounded-full border border-white/12 bg-white/[0.04] px-8 py-4 text-center font-mono text-[11px] uppercase tracking-[0.22em] text-white transition-colors hover:bg-white/[0.08]"
-              onClick={() => openChat({ message: accessMessage })}
-            >
-              Talk to Yantra
-            </button>
-          </div>
-        </motion.form>
+          <AccessRequestForm className="flex flex-col gap-8" />
+        </motion.div>
       </div>
     </section>
   );
@@ -673,7 +533,7 @@ function Footer() {
 export default function MarketingLandingPage() {
   return (
     <ChatProvider>
-      <div className="min-h-screen bg-transparent text-white selection:bg-white selection:text-black">
+      <div className="min-h-[100svh] bg-transparent text-white selection:bg-white selection:text-black sm:min-h-screen">
         <FluidBackground />
         <Nav />
         <main>

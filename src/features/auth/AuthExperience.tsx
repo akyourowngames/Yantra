@@ -5,16 +5,19 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'motion/react';
 import {
   ArrowRight,
+  CheckCircle2,
   Eye,
   EyeOff,
+  Orbit,
   LockKeyhole,
+  ShieldAlert,
   ShieldCheck,
   Sparkles,
   Waypoints,
 } from 'lucide-react';
 import { useState, type FormEvent, type ReactNode } from 'react';
 import { createClient as createSupabaseBrowserClient } from '@/src/lib/supabase/client';
-import { usePageTransition } from '@/src/features/motion/ExperienceProvider';
+import { startRouteTransition } from '@/src/features/motion/ExperienceProvider';
 
 type AuthMode = 'login' | 'signup';
 
@@ -70,14 +73,23 @@ const authContent = {
   }
 >;
 
+type AuthStatusPresentation = {
+  eyebrow: string;
+  title: string;
+  body: string;
+  icon: typeof ShieldCheck;
+  chromeClassName: string;
+  iconClassName: string;
+};
+
 function AuthAtmosphere() {
   return (
     <>
       <div className="pointer-events-none fixed inset-0 z-[-1] overflow-hidden bg-[#050505]">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.08),transparent_30%),radial-gradient(circle_at_82%_18%,rgba(255,255,255,0.06),transparent_24%),linear-gradient(180deg,rgba(255,255,255,0.03),transparent_22%,transparent_82%,rgba(255,255,255,0.04))]" />
-        <div className="absolute left-[-8%] top-[10%] h-[30rem] w-[30rem] rounded-full bg-white/[0.06] blur-[130px]" />
-        <div className="absolute right-[-10%] top-[-8%] h-[34rem] w-[34rem] rounded-full bg-white/[0.05] blur-[150px]" />
-        <div className="absolute bottom-[-24%] left-[22%] h-[38rem] w-[40rem] rounded-full bg-white/[0.04] blur-[170px]" />
+        <div className="absolute left-[-8%] top-[10%] h-[30rem] w-[30rem] rounded-full bg-white/[0.05] blur-[130px]" />
+        <div className="absolute right-[-10%] top-[-8%] h-[34rem] w-[34rem] rounded-full bg-white/[0.04] blur-[150px]" />
+        <div className="absolute bottom-[-24%] left-[22%] h-[38rem] w-[40rem] rounded-full bg-white/[0.035] blur-[170px]" />
         <div
           className="absolute inset-0 opacity-[0.05]"
           style={{
@@ -163,6 +175,7 @@ function AuthInput({
   placeholder,
   error,
   trailing,
+  autoComplete = 'off',
   onChange,
 }: {
   label: string;
@@ -171,8 +184,11 @@ function AuthInput({
   placeholder: string;
   error?: string;
   trailing?: ReactNode;
+  autoComplete?: string;
   onChange: (value: string) => void;
 }) {
+  const [interactive, setInteractive] = useState(false);
+
   return (
     <div className="space-y-2">
       <FieldLabel>{label}</FieldLabel>
@@ -181,6 +197,15 @@ function AuthInput({
           type={type}
           value={value}
           placeholder={placeholder}
+          readOnly={!interactive}
+          autoComplete={autoComplete}
+          autoCorrect="off"
+          autoCapitalize="none"
+          spellCheck={false}
+          data-lpignore="true"
+          data-1p-ignore="true"
+          onFocus={() => setInteractive(true)}
+          onPointerDown={() => setInteractive(true)}
           onChange={(event) => onChange(event.target.value)}
           className={`hoverable w-full border-b bg-transparent py-3 text-base text-white outline-none transition-colors placeholder:text-white/12 md:text-sm ${
             error ? 'border-red-300/60' : 'border-white/20 focus:border-white'
@@ -191,6 +216,104 @@ function AuthInput({
       {error ? <p className="text-[11px] text-red-200/90">{error}</p> : null}
     </div>
   );
+}
+
+function describeAuthStatus(status: AuthStatus): AuthStatusPresentation | null {
+  if (!status) {
+    return null;
+  }
+
+  const normalized = status.message.toLowerCase();
+
+  if (status.kind === 'success') {
+    if (normalized.includes('password reset email sent')) {
+      return {
+        eyebrow: 'Recovery Link Sent',
+        title: 'Secure reset signal is in motion',
+        body: 'Check your inbox and open the Yantra recovery link to rotate your access key.',
+        icon: CheckCircle2,
+        chromeClassName: 'border-white/12 bg-white/[0.05]',
+        iconClassName: 'border-white/12 bg-white text-black',
+      };
+    }
+
+    if (normalized.includes('account created')) {
+      return {
+        eyebrow: 'Identity Provisioned',
+        title: 'Your Yantra account is ready',
+        body: 'Confirm the email link, then return to this gateway to enter your dashboard.',
+        icon: CheckCircle2,
+        chromeClassName: 'border-white/12 bg-white/[0.05]',
+        iconClassName: 'border-white/12 bg-white text-black',
+      };
+    }
+
+    if (normalized.includes('password updated') || normalized.includes('access key rotated')) {
+      return {
+        eyebrow: 'Access Key Rotated',
+        title: 'Your recovery cycle completed',
+        body: 'Log in with the new password to reopen your protected Yantra workspace.',
+        icon: CheckCircle2,
+        chromeClassName: 'border-white/12 bg-white/[0.05]',
+        iconClassName: 'border-white/12 bg-white text-black',
+      };
+    }
+  }
+
+  if (status.kind === 'info') {
+    if (normalized.includes('signed out') || normalized.includes('session closed')) {
+      return {
+        eyebrow: 'Session Closed',
+        title: 'Your console has been sealed',
+        body: 'The active Yantra session was closed cleanly. Sign in again whenever you want to continue the path.',
+        icon: Orbit,
+        chromeClassName: 'border-white/10 bg-black/28',
+        iconClassName: 'border-white/10 bg-white/[0.05] text-white/82',
+      };
+    }
+
+    if (normalized.includes('google sign-in')) {
+      return {
+        eyebrow: 'Deferred Surface',
+        title: 'Google access is still offline',
+        body: 'Email and password auth is live now. Social login stays intentionally deferred in this pass.',
+        icon: Orbit,
+        chromeClassName: 'border-white/10 bg-black/28',
+        iconClassName: 'border-white/10 bg-white/[0.05] text-white/82',
+      };
+    }
+
+    if (normalized.includes('supabase is not configured')) {
+      return {
+        eyebrow: 'System Keys Missing',
+        title: 'This gateway needs live runtime keys',
+        body: 'Add the Supabase project URL and anon key, then reload the auth surface to activate sign-in.',
+        icon: Orbit,
+        chromeClassName: 'border-white/10 bg-black/28',
+        iconClassName: 'border-white/10 bg-white/[0.05] text-white/82',
+      };
+    }
+  }
+
+  return {
+    eyebrow: status.kind === 'error' ? 'Signal Interrupted' : status.kind === 'success' ? 'Status' : 'System Notice',
+    title:
+      status.kind === 'error'
+        ? 'The auth layer needs another pass'
+        : status.kind === 'success'
+          ? 'State updated successfully'
+          : 'Yantra sent a system notice',
+    body: status.message,
+    icon: status.kind === 'error' ? ShieldAlert : status.kind === 'success' ? CheckCircle2 : Orbit,
+    chromeClassName:
+      status.kind === 'error' ? 'border-red-300/30 bg-red-400/10' : status.kind === 'success' ? 'border-white/12 bg-white/[0.05]' : 'border-white/10 bg-black/28',
+    iconClassName:
+      status.kind === 'error'
+        ? 'border-red-300/25 bg-red-500/10 text-red-100'
+        : status.kind === 'success'
+          ? 'border-white/12 bg-white text-black'
+          : 'border-white/10 bg-white/[0.05] text-white/82',
+  };
 }
 
 export default function AuthExperience({
@@ -204,7 +327,6 @@ export default function AuthExperience({
 }) {
   const content = authContent[mode];
   const router = useRouter();
-  const { startPageTransition } = usePageTransition();
   const [fields, setFields] = useState<AuthFields>({
     fullName: '',
     email: '',
@@ -219,6 +341,7 @@ export default function AuthExperience({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isRecovering, setIsRecovering] = useState(false);
   const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false);
+  const statusPresentation = describeAuthStatus(status);
 
   const updateField = <K extends keyof AuthFields>(key: K, value: AuthFields[K]) => {
     setFields((current) => ({
@@ -316,7 +439,7 @@ export default function AuthExperience({
           throw error;
         }
 
-        startPageTransition();
+        startRouteTransition({ href: '/dashboard', label: 'Opening Dashboard' });
         router.replace('/dashboard');
         router.refresh();
         return;
@@ -339,7 +462,7 @@ export default function AuthExperience({
       }
 
       if (data.session) {
-        startPageTransition();
+        startRouteTransition({ href: '/onboarding', label: 'Opening Onboarding' });
         router.replace('/onboarding');
         router.refresh();
         return;
@@ -369,6 +492,8 @@ export default function AuthExperience({
       return;
     }
 
+    const email = fields.email.trim();
+
     if (!supabaseConfigured) {
       setStatus({
         kind: 'error',
@@ -381,10 +506,8 @@ export default function AuthExperience({
 
     try {
       const supabase = createSupabaseBrowserClient();
-      const redirectTo = `${window.location.origin}/auth/confirm?next=/reset-password`;
-      const { error } = await supabase.auth.resetPasswordForEmail(fields.email.trim(), {
-        redirectTo,
-      });
+      const redirectTo = `${window.location.origin}/auth/reset-password`;
+      const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
 
       if (error) {
         throw error;
@@ -473,7 +596,7 @@ export default function AuthExperience({
             className="rounded-[1.75rem] border border-white/10 bg-white/[0.03] p-5 backdrop-blur-[24px]"
           >
             <div className="flex items-center gap-3">
-              <span className="h-2.5 w-2.5 rounded-full bg-white shadow-[0_0_14px_rgba(255,255,255,0.72)] animate-pulse" />
+              <span className="h-2.5 w-2.5 rounded-full bg-white shadow-[0_0_14px_rgba(255,255,255,0.52)]" />
               <span className="font-mono text-[9px] uppercase tracking-[0.24em] text-white/52">{content.eyebrow}</span>
             </div>
 
@@ -507,7 +630,7 @@ export default function AuthExperience({
             className="space-y-8"
           >
             <div className="flex items-center gap-3">
-              <span className="h-2.5 w-2.5 rounded-full bg-white shadow-[0_0_14px_rgba(255,255,255,0.72)] animate-pulse" />
+              <span className="h-2.5 w-2.5 rounded-full bg-white shadow-[0_0_14px_rgba(255,255,255,0.52)]" />
               <span className="font-mono text-[10px] uppercase tracking-[0.28em] text-white/52">{content.eyebrow}</span>
             </div>
 
@@ -571,7 +694,12 @@ export default function AuthExperience({
                 </p>
               </div>
 
-              <form className="space-y-6" onSubmit={handleSubmit}>
+              <form className="space-y-6" onSubmit={handleSubmit} autoComplete="off">
+                <div className="pointer-events-none absolute h-0 w-0 overflow-hidden opacity-0" aria-hidden="true">
+                  <input tabIndex={-1} autoComplete="username" />
+                  <input tabIndex={-1} type="password" autoComplete="current-password" />
+                </div>
+
                 {mode === 'signup' ? (
                   <AuthInput
                     label="Full Name"
@@ -589,6 +717,7 @@ export default function AuthExperience({
                   value={fields.email}
                   placeholder="identity@yantra.ai"
                   error={errors.email}
+                  autoComplete="off"
                   onChange={(value) => updateField('email', value)}
                 />
 
@@ -600,6 +729,7 @@ export default function AuthExperience({
                       value={fields.password}
                       placeholder="Create a secure password"
                       error={errors.password}
+                      autoComplete="off"
                       onChange={(value) => updateField('password', value)}
                       trailing={
                         <button
@@ -618,6 +748,7 @@ export default function AuthExperience({
                       value={fields.confirmPassword}
                       placeholder="Repeat your password"
                       error={errors.confirmPassword}
+                      autoComplete="off"
                       onChange={(value) => updateField('confirmPassword', value)}
                       trailing={
                         <button
@@ -638,6 +769,7 @@ export default function AuthExperience({
                     value={fields.password}
                     placeholder="Enter your password"
                     error={errors.password}
+                    autoComplete="off"
                     onChange={(value) => updateField('password', value)}
                     trailing={
                       <button
@@ -729,18 +861,35 @@ export default function AuthExperience({
                 </button>
               </form>
 
-              {status ? (
-                <div
-                  className={`mt-6 rounded-[1.25rem] border px-4 py-4 text-sm leading-relaxed md:rounded-[1.4rem] ${
-                    status.kind === 'error'
-                      ? 'border-red-300/30 bg-red-400/10 text-red-100'
-                      : status.kind === 'success'
-                        ? 'border-white/12 bg-white/[0.05] text-white/82'
-                        : 'border-white/10 bg-black/20 text-white/68'
-                  }`}
+              {statusPresentation ? (
+                <motion.div
+                  initial={{ opacity: 0, y: 16, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+                  className={`relative mt-6 overflow-hidden rounded-[1.35rem] border p-4 md:rounded-[1.5rem] ${statusPresentation.chromeClassName}`}
                 >
-                  {status.message}
-                </div>
+                  <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.08),transparent_36%,rgba(255,255,255,0.03))]" />
+                  <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute left-0 top-0 h-px w-full bg-gradient-to-r from-transparent via-white/18 to-transparent"
+                  />
+
+                  <div className="relative z-10 flex items-start gap-4">
+                    <div className={`mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-full border ${statusPresentation.iconClassName}`}>
+                      <statusPresentation.icon size={17} />
+                    </div>
+
+                    <div>
+                      <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-white/46">
+                        {statusPresentation.eyebrow}
+                      </div>
+                      <div className="mt-2 font-display text-xl font-medium tracking-tight text-white">
+                        {statusPresentation.title}
+                      </div>
+                      <p className="mt-2 text-sm leading-relaxed text-white/66">{statusPresentation.body}</p>
+                    </div>
+                  </div>
+                </motion.div>
               ) : null}
 
               <div className="mt-7 border-t border-white/8 pt-5 text-center md:mt-8 md:pt-6">

@@ -2,62 +2,112 @@
 
 ## Repo Summary
 
-Yantra is now a Next.js project with two live frontend experiences and one live backend endpoint:
+Yantra is a Next.js 16 App Router project with live authentication, protected student routes, a persisted student profile, and a Gemini-backed chat assistant.
 
-- landing page at `/`
-- dashboard concept at `/dashboard`
-- AI chat route at `/api/chat`
+The current codebase is best described as:
+
+- a polished marketing experience
+- a real auth and profile foundation
+- a protected dashboard shell
+- a live AI assistant
+- a live access pipeline
+
+It is no longer accurate to describe the repo as only a static frontend shell.
+
+## Live Runtime Surfaces
+
+### Public
+
+- `/` marketing landing page
+- `/login` sign-in experience
+- `/signup` sign-up experience
+- `/auth/reset-password` password recovery completion
+
+### Protected
+
+- `/dashboard` student dashboard
+- `/dashboard/student-profile` editable student profile
+
+### Auth utility routes
+
+- `/auth/confirm` handles Supabase email confirmation links
+- `/auth/signout` clears the session and redirects to `/login`
+
+### API routes
+
+- `POST /api/chat`
+- `GET /api/chat/history`
+- `GET /api/profile`
+- `PUT /api/profile`
+- `POST /api/access-requests`
 
 ## What Works Today
 
-- local Next.js development
-- Vercel deployment
-- Gemini-powered chat
-- dashboard route rendering
-- shared visual language between landing page and dashboard
+- local Next.js development and production builds
+- Vercel-compatible deployment
+- Supabase SSR auth with cookie refresh through `proxy.ts`
+- redirect protection for `/dashboard` and `/dashboard/student-profile`
+- automatic first-profile creation in Supabase for signed-in users
+- profile editing and saving from the student profile page
+- Gemini chat requests using `gemini-2.5-flash`
+- access-request submission with request validation, persistence, and success/error states
+- password reset email flow and reset page
+- authenticated chat history restore across sessions
 
-## What Is Still Static
+## What Is Real But Limited
 
-- landing page content
-- dashboard progress metrics
-- dashboard skills
-- dashboard room availability
-- AI prompt suggestions
+### Access requests
 
-There is no live user data behind these yet.
+The access-request form is wired end to end from the landing page to `POST /api/access-requests`, and the route now persists records in Supabase. There is still no internal admissions or partner-review UI in this repo.
 
-## Important Product Reality
+### Dashboard personalization
 
-The current repo is a polished product shell, not a full learning platform.
+The dashboard now receives the authenticated learner name and email from the profile/auth layer, but most dashboard cards, room states, curriculum items, and momentum visuals are still hardcoded presentation data.
 
-That is a good place to be, but new contributors should not mistake UI direction for completed platform capability.
+### Student profile persistence
 
-## Known Structural Reality
+The student profile is real. It is stored in Supabase, seeded on first access, sanitized on write, and exposed through `/api/profile`. Only the profile data model is persisted today, not the rest of the dashboard state.
 
-- `src/features/marketing/MarketingLandingPage.tsx` is still a large landing-page file
-- the dashboard is isolated in `src/features/dashboard/`
-- chat is isolated in `src/features/chat/`
-- design and planning references have been moved into `docs/reference/`
+### Chat continuity
+
+Authenticated learners now resume a single rolling Yantra conversation from Supabase-backed history. Public marketing chat still remains ephemeral.
+
+## Known Placeholder Areas
+
+- Google sign-in is a UI placeholder
+- dashboard skills, rooms, and progression are static
+- teacher, institution, analytics, and certification flows are not built
+
+## Important Runtime Structure
+
+- `app/` contains route entrypoints and API handlers
+- `src/features/marketing/` contains the public landing page
+- `src/features/auth/` contains the login/signup UI
+- `src/features/dashboard/` contains the dashboard and profile experiences
+- `src/features/chat/` contains the chat widget and prompt configuration
+- `src/lib/supabase/` contains browser, server, env, proxy, and profile helpers
+- `supabase/schema.sql` defines the required database table and RLS policies
+- `proxy.ts` refreshes Supabase auth cookies on matching requests
 
 ## Important Reference Assets
 
-- `docs/reference/dashboard-sample/` contains the dashboard design references
-- `docs/reference/build-plan/Yantra_AI_Build_Plan.pdf` contains the broader product strategy
-- `docs/reference/build-plan/tmp_yantra_pdf.txt` is a text extraction of that PDF
+- `docs/reference/dashboard-sample/` contains dashboard design references
+- `docs/reference/Login-signup-sample/` contains login/signup design references
+- `docs/reference/build-plan/` contains the broader product-plan PDF and extracted text
 
-These are useful and should not be deleted without approval.
+These are still useful inputs and should not be removed without approval.
 
 ## Immediate Recommended Builder Flow
 
-1. Read the docs folder.
-2. Decide whether you are working on marketing, dashboard, chat, or platform foundations.
-3. Keep runtime code changes separate from cleanup changes.
-4. Do not remove legacy or reference files without explicit approval.
+1. Confirm local env vars and Supabase setup from `engineering/SETUP_AND_DEPLOYMENT.md`.
+2. Decide whether the task belongs to marketing, auth, dashboard, chat, or platform foundations.
+3. Keep runtime work separate from cleanup or archival changes.
+4. Update the relevant feature doc and this handoff note when behavior changes.
 
-## Immediate Next Good Tasks
+## Best Next Work
 
-- introduce persistent data
-- define the student model
-- formalize dashboard data contracts
-- split the marketing page into smaller files when approved
-- start the first real practice-room implementation
+- replace dashboard hardcoded content with a typed data contract
+- add tests around profile APIs, auth redirects, and chat/access-request flows
+- decide whether Google sign-in should remain deferred or become a real OAuth path
+- add internal review tooling for access requests
+- evolve chat from a single rolling thread into richer learner memory and observability

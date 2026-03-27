@@ -1,51 +1,69 @@
 # Marketing Site
 
-## Route
+## Route And Ownership
 
-- `/`
+- Route: `/`
 - Entry file: `app/page.tsx`
 - Main implementation: `src/features/marketing/MarketingLandingPage.tsx`
 
 ## Purpose
 
-The marketing site is the public-facing narrative layer of Yantra.
+The marketing site is the public-facing narrative and conversion layer for Yantra.
 
-It is currently responsible for:
+Today it is responsible for:
 
-- explaining the platform
-- positioning the product for learners and institutions
-- driving waitlist and demo-style intent
-- providing entry points into the AI chat experience
+- explaining the product story
+- directing visitors into signup and login
+- collecting access intent through the access-request form
+- opening the Yantra chat assistant with guided prompts
 
 ## Main Sections
 
-- navigation
-- hero
-- ticker
-- about
-- stats
-- academics/capabilities
-- gallery/use cases
-- contact/access CTA
+The landing page currently includes:
+
+- fixed navigation with in-page anchors
+- hero section
+- animated ticker
+- about/platform framing
+- capability cards
+- visual use-case grid
+- access/contact section
 - footer
+
+## Live User Actions
+
+### Account entry
+
+- primary CTA routes to `/signup`
+- auth links route to `/login` and `/signup`
+
+### Chat entry
+
+The page is wrapped in `ChatProvider`, so CTA buttons can open the shared chat modal and optionally pre-send prompts from `yantraCtaPrompts`.
+
+### Access requests
+
+The access/contact area uses `src/features/access/AccessRequestForm.tsx`, which submits to `POST /api/access-requests`.
+
+That flow is live and now persists requests in Supabase.
 
 ## Current Strengths
 
-- strong branded visual identity
-- clear monochrome cinematic design language
-- integrated AI CTA flow
-- clear top-level product framing
+- strong visual identity and motion language
+- clear conversion paths into signup and chat
+- real access-request submission flow with persistence
+- public surface still renders cleanly even when Supabase-backed actions are unavailable
 
-## Current Weaknesses
+## Current Limitations
 
 - still implemented in one large feature file
-- content is static
+- content is hardcoded
 - no CMS or structured content source
-- no routing to deeper marketing pages yet
+- no deeper marketing routes yet
 
-## Recommended Future Work
+## Guidance For Future Work
 
-- split `src/features/marketing/MarketingLandingPage.tsx` into smaller section files
-- move static content into dedicated data/config files
-- add a direct dashboard link when appropriate
-- add deeper public pages if product messaging expands
+- keep the landing page as the public route boundary
+- extract large section blocks into smaller files before the component grows further
+- move static content into typed config objects if copy variants increase
+- add an internal admissions or partner-review workflow before expanding the access form further

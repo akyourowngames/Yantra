@@ -20,11 +20,21 @@ import {
   UserCircle2,
   Waypoints,
   X,
+  type LucideIcon,
 } from 'lucide-react';
 import { motion, useInView } from 'motion/react';
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { ChatProvider, useChatWidget } from '@/src/features/chat/ChatWidget';
 import { useOverlayLock } from '@/src/features/motion/ExperienceProvider';
+import {
+  type DashboardRoomTextureKey,
+  type DashboardSkillIconKey,
+  type DashboardSkillToneKey,
+  type StudentDashboardCurriculumNode,
+  type StudentDashboardData,
+  type StudentDashboardRoom,
+  type StudentDashboardSkill,
+} from './student-dashboard-model';
 import YantraAmbientBackground from './YantraAmbientBackground';
 import type {
   DashboardCurriculumNode,
@@ -36,10 +46,7 @@ import { dashboardSectionLinks } from './dashboard-content';
 import type { StudentProfile } from './student-profile-model';
 
 type StudentDashboardProps = {
-  fullName: string;
-  firstName: string;
-  email: string;
-  profile: StudentProfile;
+  data: StudentDashboardData;
 };
 
 type DashboardViewModel = {
@@ -369,6 +376,50 @@ function buildDashboardViewModel(profile: StudentProfile): DashboardViewModel {
   };
 }
 
+const DashboardDataContext = createContext<StudentDashboardData | null>(null);
+
+const aiPrompts = [
+  'Explain backpropagation simply',
+  'What should I learn next?',
+  'Open my next room',
+];
+
+const skillIconMap: Record<DashboardSkillIconKey, LucideIcon> = {
+  python: TerminalSquare,
+  logic: Brain,
+  ml: Sparkles,
+  data: Database,
+  networks: Waypoints,
+  prompt: Layers3,
+};
+
+const skillToneClassMap: Record<DashboardSkillToneKey, string> = {
+  primary: 'text-white',
+  soft: 'text-white/84',
+  muted: 'text-white/38',
+};
+
+const roomTextureMap: Record<DashboardRoomTextureKey, string> = {
+  'python-room':
+    'radial-gradient(circle at 20% 10%, rgba(255,255,255,0.12), transparent 32%), radial-gradient(circle at 78% 18%, rgba(255,255,255,0.06), transparent 24%), linear-gradient(145deg, rgba(3,10,14,0.95), rgba(9,20,24,0.82) 42%, rgba(11,11,11,0.96) 100%)',
+  'neural-builder':
+    'radial-gradient(circle at 80% 12%, rgba(255,255,255,0.14), transparent 30%), radial-gradient(circle at 20% 88%, rgba(255,255,255,0.06), transparent 34%), linear-gradient(145deg, rgba(19,19,22,0.98), rgba(27,27,30,0.9) 45%, rgba(9,9,11,0.98) 100%)',
+  'data-explorer':
+    'radial-gradient(circle at 72% 18%, rgba(255,255,255,0.08), transparent 26%), linear-gradient(160deg, rgba(10,12,14,0.95), rgba(21,21,21,0.85) 54%, rgba(8,8,8,0.98) 100%)',
+  'prompt-lab':
+    'radial-gradient(circle at 30% 18%, rgba(255,255,255,0.08), transparent 26%), linear-gradient(150deg, rgba(9,9,9,0.96), rgba(20,20,20,0.84) 50%, rgba(11,11,13,0.98) 100%)',
+};
+
+function useDashboardData() {
+  const context = useContext(DashboardDataContext);
+
+  if (!context) {
+    throw new Error('useDashboardData must be used inside StudentDashboard.');
+  }
+
+  return context;
+}
+
 function SectionShell({
   id,
   number,
@@ -390,10 +441,10 @@ function SectionShell({
     <motion.section
       id={id}
       className="relative scroll-mt-28 space-y-10 md:space-y-12"
-      initial={{ opacity: 0, y: 32 }}
+      initial={{ opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-80px' }}
-      transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+      transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
     >
       <div className="pointer-events-none absolute -left-1 top-[-4.5rem] select-none font-display text-[7rem] leading-none text-white/[0.028] md:top-[-6.5rem] md:text-[11rem]">
         {number}
@@ -415,7 +466,8 @@ function SectionShell({
   );
 }
 
-function DashboardNav({ fullName }: Pick<StudentDashboardProps, 'fullName'>) {
+function DashboardNav() {
+  const { profile } = useDashboardData();
   const { openChat } = useChatWidget();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -460,7 +512,7 @@ function DashboardNav({ fullName }: Pick<StudentDashboardProps, 'fullName'>) {
           <div className="hidden items-center gap-4 md:flex">
             <button
               type="button"
-              className="rounded-full bg-white px-5 py-2.5 font-mono text-[11px] uppercase tracking-[0.24em] text-black transition-all duration-300 hover:scale-[0.98] hoverable"
+              className="rounded-full bg-white px-5 py-2.5 font-mono text-[11px] uppercase tracking-[0.24em] text-black transition-colors hover:bg-white/92 hoverable"
               onClick={() => openChat({ message: 'Help me continue learning from my current student dashboard context.' })}
             >
               Open Yantra AI
@@ -470,10 +522,10 @@ function DashboardNav({ fullName }: Pick<StudentDashboardProps, 'fullName'>) {
               href="/dashboard/student-profile"
               className="flex items-center gap-3 rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 backdrop-blur-xl transition-colors hover:bg-white/[0.08] hoverable"
             >
-              <div className="flex h-8 w-8 items-center justify-center rounded-full border border-white/12 bg-white/[0.06] text-white/70">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full border border-white/12 bg-white/[0.04] text-white/70">
                 <UserCircle2 size={16} />
               </div>
-              <div className="font-mono text-[10px] uppercase tracking-[0.24em] text-white/58">{fullName}</div>
+              <div className="font-mono text-[10px] uppercase tracking-[0.24em] text-white/58">{profile.fullName}</div>
             </Link>
           </div>
 
@@ -488,7 +540,7 @@ function DashboardNav({ fullName }: Pick<StudentDashboardProps, 'fullName'>) {
         </div>
       </motion.nav>
 
-      {mobileMenuOpen && (
+      {mobileMenuOpen ? (
         <motion.div
           data-lenis-prevent
           className="fixed inset-0 z-[70] flex flex-col overflow-y-auto bg-black/92 p-6 backdrop-blur-2xl md:hidden"
@@ -522,11 +574,7 @@ function DashboardNav({ fullName }: Pick<StudentDashboardProps, 'fullName'>) {
               </motion.a>
             ))}
 
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-            >
+            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
               <Link
                 href="/dashboard/student-profile"
                 className="rounded-full border border-white/12 bg-white/[0.04] px-7 py-3 font-mono text-[11px] uppercase tracking-[0.24em] text-white hoverable"
@@ -551,7 +599,7 @@ function DashboardNav({ fullName }: Pick<StudentDashboardProps, 'fullName'>) {
             </motion.button>
           </div>
         </motion.div>
-      )}
+      ) : null}
     </>
   );
 }
@@ -560,24 +608,29 @@ function HeroSection({
   firstName,
   profile,
   view,
-}: Pick<StudentDashboardProps, 'firstName' | 'profile'> & { view: DashboardViewModel }) {
+}: {
+  firstName: string;
+  profile: StudentDashboardData['profile'];
+  view: DashboardViewModel;
+}) {
+  const { path } = useDashboardData();
   const { openChat } = useChatWidget();
   const statRef = useRef<HTMLDivElement>(null);
   const statInView = useInView(statRef, { once: true, margin: '-60px' });
   const progress = profile.progress;
   const progressWidth = `${progress}%`;
-  const resolvedView = view ?? buildDashboardViewModel(profile);
+  const resolvedView = view;
 
   return (
     <section className="relative grid gap-10 pt-28 md:grid-cols-[minmax(0,1.15fr)_minmax(22rem,0.85fr)] md:items-end md:gap-14 md:pt-36">
       <motion.div
         className="space-y-8"
-        initial={{ opacity: 0, y: 28 }}
+        initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
       >
-        <div className="inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/[0.045] px-5 py-2 backdrop-blur-xl">
-          <span className="h-2.5 w-2.5 rounded-full bg-white shadow-[0_0_16px_rgba(255,255,255,0.75)] animate-pulse" />
+        <div className="inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/[0.04] px-5 py-2 backdrop-blur-xl">
+          <span className="h-2 w-2 rounded-full bg-white/85" />
           <span className="font-mono text-[10px] uppercase tracking-[0.32em] text-white/42">Student OS / System Active</span>
         </div>
 
@@ -611,38 +664,39 @@ function HeroSection({
         </div>
 
         <div className="grid gap-4 sm:grid-cols-3">
-          {resolvedView.hero.summaryCards.map((card) => (
-            <div key={card.label} className="rounded-[1.75rem] border border-white/8 bg-white/[0.03] px-5 py-4 backdrop-blur-xl">
-              <div className="font-mono text-[10px] uppercase tracking-[0.24em] text-white/34">{card.label}</div>
-              <div className="mt-2 font-display text-2xl font-medium text-white">{card.value}</div>
-            </div>
-          ))}
+          <div className="rounded-[1.75rem] border border-white/8 bg-white/[0.03] px-5 py-4 backdrop-blur-xl">
+            <div className="font-mono text-[10px] uppercase tracking-[0.24em] text-white/34">Momentum</div>
+            <div className="mt-2 font-display text-2xl font-medium text-white">{path.momentumSummary}</div>
+          </div>
+          <div className="rounded-[1.75rem] border border-white/8 bg-white/[0.03] px-5 py-4 backdrop-blur-xl">
+            <div className="font-mono text-[10px] uppercase tracking-[0.24em] text-white/34">Focus</div>
+            <div className="mt-2 font-display text-2xl font-medium text-white">{path.focusSummary}</div>
+          </div>
+          <div className="rounded-[1.75rem] border border-white/8 bg-white/[0.03] px-5 py-4 backdrop-blur-xl">
+            <div className="font-mono text-[10px] uppercase tracking-[0.24em] text-white/34">Consistency</div>
+            <div className="mt-2 font-display text-2xl font-medium text-white">{path.consistencySummary}</div>
+          </div>
         </div>
       </motion.div>
 
       <motion.div
         ref={statRef}
-        className="relative overflow-hidden rounded-[2.2rem] border border-white/10 bg-white/[0.045] p-6 backdrop-blur-[28px] md:p-7"
-        initial={{ opacity: 0, y: 36 }}
+        className="relative overflow-hidden rounded-[2.2rem] border border-white/10 bg-white/[0.04] p-6 backdrop-blur-[28px] md:p-7"
+        initial={{ opacity: 0, y: 28 }}
         animate={statInView ? { opacity: 1, y: 0 } : undefined}
         transition={{ duration: 0.85, delay: 0.14, ease: [0.16, 1, 0.3, 1] }}
       >
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.14),transparent_32%),linear-gradient(180deg,rgba(255,255,255,0.05),transparent_38%,rgba(255,255,255,0.03))]" />
-        <div className="absolute right-[-18%] top-[-10%] h-60 w-60 rounded-full bg-white/[0.08] blur-[100px]" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),transparent_36%,rgba(255,255,255,0.02))]" />
 
         <div className="relative z-10 space-y-7">
           <div className="flex items-start justify-between gap-4">
             <div>
               <div className="font-mono text-[10px] uppercase tracking-[0.28em] text-white/38">Current Path</div>
-              <div className="mt-3 font-display text-3xl font-medium text-white md:text-[2.5rem]">
-                {resolvedView.hero.currentPath}
-              </div>
-              <div className="mt-2 text-sm leading-relaxed text-white/52">
-                {resolvedView.hero.pathDescription}
-              </div>
+              <div className="mt-3 font-display text-3xl font-medium text-white md:text-[2.5rem]">{path.pathTitle}</div>
+              <div className="mt-2 text-sm leading-relaxed text-white/52">{path.pathDescription}</div>
             </div>
             <div className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 font-mono text-[10px] uppercase tracking-[0.22em] text-white/54">
-              Live Path
+              {path.pathStatusLabel}
             </div>
           </div>
 
@@ -667,7 +721,7 @@ function HeroSection({
             </div>
             <div className="h-2 overflow-hidden rounded-full bg-white/10">
               <motion.div
-                className="h-full rounded-full bg-white shadow-[0_0_18px_rgba(255,255,255,0.28)]"
+                className="h-full rounded-full bg-white"
                 initial={{ width: 0 }}
                 animate={statInView ? { width: progressWidth } : undefined}
                 transition={{ duration: 1.1, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
@@ -705,9 +759,9 @@ function HeroSection({
 
 function OverviewSection({ view }: { view: DashboardViewModel }) {
   const { openChat } = useChatWidget();
-  const masteryProgress = view.overview.masteryProgress;
+  const { path, curriculumNodes, weeklyActivity } = useDashboardData();
   const masteryCircumference = 2 * Math.PI * 58;
-  const masteryOffset = masteryCircumference - (masteryCircumference * masteryProgress) / 100;
+  const masteryOffset = masteryCircumference - (masteryCircumference * path.masteryProgress) / 100;
 
   return (
     <SectionShell
@@ -719,14 +773,12 @@ function OverviewSection({ view }: { view: DashboardViewModel }) {
     >
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-12">
         <motion.article
-          className="group relative overflow-hidden rounded-[2rem] border border-white/8 bg-white/[0.035] p-8 backdrop-blur-[24px] transition-all duration-500 hover:-translate-y-1 hover:bg-white/[0.05] hoverable xl:col-span-8"
+          className="relative overflow-hidden rounded-[2rem] border border-white/8 bg-white/[0.035] p-8 backdrop-blur-[24px] xl:col-span-8"
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-60px' }}
           transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
         >
-          <div className="absolute right-[-12%] top-[-20%] h-64 w-64 rounded-full bg-white/[0.05] blur-[90px]" />
-
           <div className="relative z-10 flex h-full flex-col justify-between gap-10">
             <div className="space-y-6">
               <div className="flex items-center justify-between gap-4">
@@ -750,7 +802,7 @@ function OverviewSection({ view }: { view: DashboardViewModel }) {
               <div className="flex flex-wrap gap-3">
                 <a
                   href="#rooms"
-                  className="rounded-full bg-white px-6 py-3 font-mono text-[10px] uppercase tracking-[0.16em] text-black transition-transform duration-300 hover:scale-[0.98] hoverable"
+                  className="rounded-full bg-white px-6 py-3 font-mono text-[10px] uppercase tracking-[0.16em] text-black transition-colors hover:bg-white/92 hoverable"
                 >
                   {view.overview.primaryCtaLabel}
                 </a>
@@ -764,14 +816,14 @@ function OverviewSection({ view }: { view: DashboardViewModel }) {
 
               <div className="text-left lg:text-right">
                 <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/36">Estimated Completion</p>
-                <p className="mt-2 font-display text-xl text-white">{view.overview.estimatedCompletion}</p>
+                <p className="mt-2 font-display text-xl text-white">{path.completionEstimateLabel}</p>
               </div>
             </div>
           </div>
         </motion.article>
 
         <motion.article
-          className="group relative overflow-hidden rounded-[2rem] border border-white/8 bg-white/[0.035] p-8 backdrop-blur-[24px] transition-all duration-500 hover:-translate-y-1 hover:bg-white/[0.05] hoverable xl:col-span-4"
+          className="relative overflow-hidden rounded-[2rem] border border-white/8 bg-white/[0.035] p-8 backdrop-blur-[24px] xl:col-span-4"
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-60px' }}
@@ -801,19 +853,19 @@ function OverviewSection({ view }: { view: DashboardViewModel }) {
                 />
               </svg>
               <div className="absolute inset-0 flex items-center justify-center">
-                <span className="font-display text-3xl font-light text-white">{masteryProgress}%</span>
+                <span className="font-display text-3xl font-light text-white">{path.masteryProgress}%</span>
               </div>
             </div>
 
             <p className="font-display text-4xl font-semibold text-white">
-              {view.overview.unlockedNodes} / {view.overview.totalNodes}
+              {path.masteryUnlockedCount} / {path.masteryTotalCount}
             </p>
             <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.16em] text-white/36">Competency Nodes Unlocked</p>
           </div>
         </motion.article>
 
         <motion.article
-          className="group relative overflow-hidden rounded-[2rem] border border-white/8 bg-white/[0.035] p-8 backdrop-blur-[24px] transition-all duration-500 hover:-translate-y-1 hover:bg-white/[0.05] hoverable xl:col-span-5"
+          className="relative overflow-hidden rounded-[2rem] border border-white/8 bg-white/[0.035] p-8 backdrop-blur-[24px] xl:col-span-5"
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-60px' }}
@@ -824,29 +876,33 @@ function OverviewSection({ view }: { view: DashboardViewModel }) {
 
             <div className="flex items-start gap-5">
               <div className="flex h-16 w-16 shrink-0 flex-col items-center justify-center rounded-[1.5rem] border border-white/10 bg-white/[0.05]">
-                <span className="font-display text-2xl font-semibold text-white">{view.overview.upcomingSession.badgeValue}</span>
-                <span className="font-mono text-[8px] uppercase tracking-[0.18em] text-white/34">{view.overview.upcomingSession.badgeLabel}</span>
+                <span className="font-display text-2xl font-semibold text-white">{path.nextSessionDateDay}</span>
+                <span className="font-mono text-[8px] uppercase tracking-[0.18em] text-white/34">{path.nextSessionDateMonth}</span>
               </div>
 
               <div>
-                <h3 className="font-display text-2xl font-semibold text-white">{view.overview.upcomingSession.title}</h3>
+                <h3 className="font-display text-2xl font-semibold text-white">{path.nextSessionTitle}</h3>
                 <p className="mt-2 flex flex-wrap items-center gap-2 font-mono text-[10px] uppercase tracking-[0.14em] text-white/36">
                   <CalendarDays size={14} />
-                  <span>{view.overview.upcomingSession.dayLabel}</span>
+                  <span>{path.nextSessionDayLabel}</span>
                   <Clock3 size={14} />
-                  <span>{view.overview.upcomingSession.timeLabel}</span>
+                  <span>{path.nextSessionTimeLabel}</span>
                 </p>
               </div>
             </div>
 
             <div className="flex items-center gap-4 rounded-[1.25rem] border border-white/8 bg-white/[0.05] p-4">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-white/[0.06] font-mono text-[10px] uppercase tracking-[0.16em] text-white/78">
-                {view.overview.upcomingSession.guideInitials}
+              <div className="h-9 w-9 overflow-hidden rounded-full border border-white/20">
+                <img
+                  className="h-full w-full object-cover"
+                  src={path.nextSessionInstructorImageUrl}
+                  alt={`${path.nextSessionInstructorName} portrait`}
+                />
               </div>
 
               <div>
-                <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/78">{view.overview.upcomingSession.guideName}</p>
-                <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.14em] text-white/30">{view.overview.upcomingSession.guideRole}</p>
+                <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/78">{path.nextSessionInstructorName}</p>
+                <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.14em] text-white/30">{path.nextSessionInstructorRole}</p>
               </div>
 
               <button
@@ -855,7 +911,7 @@ function OverviewSection({ view }: { view: DashboardViewModel }) {
                 aria-label="Open session"
                 onClick={() =>
                   openChat({
-                    message: `Help me prepare for ${view.overview.upcomingSession.title} and tell me what to focus on next.`,
+                    message: `Help me prepare for ${path.nextSessionTitle} and tell me what to focus on next.`,
                   })
                 }
               >
@@ -866,7 +922,7 @@ function OverviewSection({ view }: { view: DashboardViewModel }) {
         </motion.article>
 
         <motion.article
-          className="group relative overflow-hidden rounded-[2rem] border border-white/8 bg-white/[0.035] p-8 backdrop-blur-[24px] transition-all duration-500 hover:-translate-y-1 hover:bg-white/[0.05] hoverable xl:col-span-7"
+          className="relative overflow-hidden rounded-[2rem] border border-white/8 bg-white/[0.035] p-8 backdrop-blur-[24px] xl:col-span-7"
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-60px' }}
@@ -875,34 +931,34 @@ function OverviewSection({ view }: { view: DashboardViewModel }) {
           <div className="flex items-center justify-between gap-4">
             <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-white/36">Weekly Momentum</span>
             <div className="flex gap-2">
-              <span className="h-2 w-2 rounded-full bg-white" />
+              <span className="h-2 w-2 rounded-full bg-white/90" />
               <span className="h-2 w-2 rounded-full bg-white/10" />
               <span className="h-2 w-2 rounded-full bg-white/10" />
             </div>
           </div>
 
           <div className="mt-10 grid h-40 grid-cols-7 items-end gap-4 px-2 md:px-4">
-            {view.weeklyMomentumBars.map((bar) => (
-              <div key={bar.day} className="flex flex-col items-center gap-4">
+            {weeklyActivity.map((bar) => (
+              <div key={bar.dayKey} className="flex flex-col items-center gap-4">
                 <div
                   className="relative w-full overflow-hidden rounded-t-full bg-white/5"
                   style={{ height: `${bar.containerHeight}px` }}
                 >
                   {bar.fillHeight > 0 ? (
                     <div
-                      className={`absolute bottom-0 w-full ${bar.bright ? 'bg-white shadow-[0_0_20px_rgba(255,255,255,0.28)]' : 'bg-white/20'}`}
+                      className={`absolute bottom-0 w-full ${bar.highlighted ? 'bg-white/90' : 'bg-white/20'}`}
                       style={{ height: `${bar.fillHeight}%` }}
                     />
                   ) : null}
                 </div>
-                <span className="font-mono text-[8px] uppercase tracking-[0.18em] text-white/30">{bar.day}</span>
+                <span className="font-mono text-[8px] uppercase tracking-[0.18em] text-white/30">{bar.dayLabel}</span>
               </div>
             ))}
           </div>
 
           <div className="mt-6 flex flex-col gap-4 border-t border-white/5 pt-6 md:flex-row md:items-center md:justify-between">
             <div>
-              <span className="font-display text-3xl font-semibold text-white">{view.overview.sessionsThisWeek} Sessions</span>
+              <span className="font-display text-3xl font-semibold text-white">{path.weeklyCompletedSessions} Sessions</span>
               <span className="ml-0 mt-2 block font-mono text-[10px] uppercase tracking-[0.16em] text-white/36 md:ml-3 md:mt-0 md:inline">
                 Completed this week
               </span>
@@ -910,7 +966,7 @@ function OverviewSection({ view }: { view: DashboardViewModel }) {
 
             <div className="flex items-center gap-2 text-white/58">
               <TrendingUp size={16} />
-              <span className="font-mono text-[10px] uppercase tracking-[0.14em]">{view.overview.momentumDelta}</span>
+              <span className="font-mono text-[10px] uppercase tracking-[0.14em]">{path.weeklyChangeLabel}</span>
             </div>
           </div>
         </motion.article>
@@ -920,34 +976,8 @@ function OverviewSection({ view }: { view: DashboardViewModel }) {
         <div className="font-mono text-[10px] uppercase tracking-[0.28em] text-white/30">Active Curriculum Nodes</div>
 
         <div className="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-          {view.curriculumNodes.map((node, index) => (
-            <motion.article
-              key={node.module}
-              className={`group relative overflow-hidden rounded-[2rem] border border-white/8 bg-white/[0.035] p-6 backdrop-blur-[24px] transition-all duration-500 hover:-translate-y-1 hoverable ${
-                node.unlocked ? 'hover:bg-white/[0.05]' : 'opacity-65 grayscale-[0.15] hover:opacity-100 hover:bg-white/[0.045]'
-              }`}
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-50px' }}
-              transition={{ duration: 0.5, delay: 0.08 * index, ease: [0.16, 1, 0.3, 1] }}
-            >
-              <div className="flex items-center justify-between gap-4">
-                <span className={`h-1.5 w-1.5 rounded-full ${node.unlocked ? 'bg-white' : 'bg-white/20'}`} />
-                <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-white/30">{node.module}</span>
-              </div>
-
-              <div className="mt-6">
-                <h4 className="font-display text-xl font-medium text-white">{node.title}</h4>
-                <p className="mt-3 text-sm leading-relaxed text-white/44">{node.description}</p>
-              </div>
-
-              <div className="mt-6 flex items-center justify-between gap-4">
-                <span className={`font-mono text-[9px] uppercase tracking-[0.16em] ${node.unlocked ? 'text-white/60' : 'text-white/36'}`}>
-                  {node.status}
-                </span>
-                {node.unlocked ? <Sparkles size={16} className="text-white/56" /> : <Lock size={16} className="text-white/24" />}
-              </div>
-            </motion.article>
+          {curriculumNodes.map((node, index) => (
+            <CurriculumNodeCard key={node.nodeKey} node={node} index={index} />
           ))}
         </div>
       </div>
@@ -955,7 +985,39 @@ function OverviewSection({ view }: { view: DashboardViewModel }) {
   );
 }
 
-function SkillsSection({ view }: { view: DashboardViewModel }) {
+function CurriculumNodeCard({ node, index }: { node: StudentDashboardCurriculumNode; index: number }) {
+  return (
+    <motion.article
+      className={`relative overflow-hidden rounded-[2rem] border border-white/8 bg-white/[0.035] p-6 backdrop-blur-[24px] ${
+        node.unlocked ? '' : 'opacity-65 grayscale-[0.15]'
+      }`}
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-50px' }}
+      transition={{ duration: 0.5, delay: 0.08 * index, ease: [0.16, 1, 0.3, 1] }}
+    >
+      <div className="flex items-center justify-between gap-4">
+        <span className={`h-1.5 w-1.5 rounded-full ${node.unlocked ? 'bg-white' : 'bg-white/20'}`} />
+        <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-white/30">{node.moduleLabel}</span>
+      </div>
+
+      <div className="mt-6">
+        <h4 className="font-display text-xl font-medium text-white">{node.title}</h4>
+        <p className="mt-3 text-sm leading-relaxed text-white/44">{node.description}</p>
+      </div>
+
+      <div className="mt-6 flex items-center justify-between gap-4">
+        <span className={`font-mono text-[9px] uppercase tracking-[0.16em] ${node.unlocked ? 'text-white/60' : 'text-white/36'}`}>
+          {node.statusLabel}
+        </span>
+        {node.unlocked ? <Sparkles size={16} className="text-white/56" /> : <Lock size={16} className="text-white/24" />}
+      </div>
+    </motion.article>
+  );
+}
+
+function SkillsSection() {
+  const { skills } = useDashboardData();
   return (
     <SectionShell
       id="skills"
@@ -973,62 +1035,60 @@ function SkillsSection({ view }: { view: DashboardViewModel }) {
       }
     >
       <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-        {view.skills.map((skill, index) => {
-          const Icon = skill.icon;
-
-          return (
-            <motion.div
-              key={skill.title}
-              className={`group relative overflow-hidden rounded-[2rem] border p-7 backdrop-blur-[24px] transition-all duration-500 hover:-translate-y-1 hoverable ${
-                skill.locked
-                  ? 'border-white/6 bg-white/[0.02] opacity-55 grayscale-[0.15]'
-                  : 'border-white/8 bg-white/[0.035] hover:bg-white/[0.05]'
-              }`}
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-50px' }}
-              transition={{ duration: 0.55, delay: index * 0.06, ease: [0.16, 1, 0.3, 1] }}
-            >
-              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-              <div className="absolute right-[-18%] top-[-16%] h-28 w-28 rounded-full bg-white/[0.07] blur-[70px]" />
-
-              <div className="relative z-10 flex items-start justify-between gap-4">
-                <div className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/66 transition-colors group-hover:text-white">
-                  {skill.locked ? <Lock size={18} /> : <Icon size={18} />}
-                </div>
-
-                <div className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 font-mono text-[10px] uppercase tracking-[0.22em] text-white/62">
-                  {skill.level}
-                </div>
-              </div>
-
-              <div className="mt-8">
-                <h3 className={`font-display text-3xl font-medium leading-none ${skill.tone}`}>{skill.title}</h3>
-                <p className="mt-4 text-sm font-light leading-relaxed text-white/52">{skill.description}</p>
-              </div>
-
-              <div className="mt-8 space-y-3">
-                <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.22em] text-white/34">
-                  <span>{skill.locked ? 'Unlock Progress' : 'Mastery'}</span>
-                  <span>{skill.progress}%</span>
-                </div>
-
-                <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
-                  <div
-                    className="h-full rounded-full bg-white shadow-[0_0_18px_rgba(255,255,255,0.22)]"
-                    style={{ width: `${skill.progress}%` }}
-                  />
-                </div>
-              </div>
-            </motion.div>
-          );
-        })}
+        {skills.map((skill, index) => (
+          <SkillCard key={skill.skillKey} skill={skill} index={index} />
+        ))}
       </div>
     </SectionShell>
   );
 }
 
-function RoomsSection({ view }: { view: DashboardViewModel }) {
+function SkillCard({ skill, index }: { skill: StudentDashboardSkill; index: number }) {
+  const Icon = skill.locked ? Lock : skillIconMap[skill.iconKey];
+
+  return (
+    <motion.div
+      className={`relative overflow-hidden rounded-[2rem] border p-7 backdrop-blur-[24px] ${
+        skill.locked ? 'border-white/6 bg-white/[0.02] opacity-55 grayscale-[0.15]' : 'border-white/8 bg-white/[0.035]'
+      }`}
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-50px' }}
+      transition={{ duration: 0.55, delay: index * 0.06, ease: [0.16, 1, 0.3, 1] }}
+    >
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/16 to-transparent" />
+
+      <div className="relative z-10 flex items-start justify-between gap-4">
+        <div className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/66">
+          <Icon size={18} />
+        </div>
+
+        <div className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 font-mono text-[10px] uppercase tracking-[0.22em] text-white/62">
+          {skill.levelLabel}
+        </div>
+      </div>
+
+      <div className="mt-8">
+        <h3 className={`font-display text-3xl font-medium leading-none ${skillToneClassMap[skill.toneKey]}`}>{skill.title}</h3>
+        <p className="mt-4 text-sm font-light leading-relaxed text-white/52">{skill.description}</p>
+      </div>
+
+      <div className="mt-8 space-y-3">
+        <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.22em] text-white/34">
+          <span>{skill.locked ? 'Unlock Progress' : 'Mastery'}</span>
+          <span>{skill.progress}%</span>
+        </div>
+
+        <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
+          <div className="h-full rounded-full bg-white" style={{ width: `${skill.progress}%` }} />
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+function RoomsSection() {
+  const { rooms } = useDashboardData();
   const { openChat } = useChatWidget();
 
   return (
@@ -1040,13 +1100,13 @@ function RoomsSection({ view }: { view: DashboardViewModel }) {
       description="The room system keeps the same four-entry structure from your sample, but the featured spaces now have more atmosphere and clearer energy around the next best action."
     >
       <div className="grid gap-6 md:grid-cols-2">
-        {view.rooms.map((room, index) => (
+        {rooms.map((room, index) => (
           <motion.article
-            key={room.title}
-            className={`group relative overflow-hidden rounded-[2rem] border border-white/8 p-8 backdrop-blur-[20px] transition-all duration-700 hover:border-white/16 hover:-translate-y-1 hoverable ${
+            key={room.roomKey}
+            className={`relative overflow-hidden rounded-[2rem] border border-white/8 p-8 backdrop-blur-[20px] ${
               room.featured ? 'min-h-[25rem]' : 'min-h-[20rem]'
             }`}
-            style={{ backgroundImage: room.texture }}
+            style={{ backgroundImage: roomTextureMap[room.textureKey] }}
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: '-40px' }}
@@ -1054,7 +1114,7 @@ function RoomsSection({ view }: { view: DashboardViewModel }) {
           >
             <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.02),transparent_26%,rgba(0,0,0,0.34)_100%)]" />
             <div
-              className="absolute inset-0 opacity-25"
+              className="absolute inset-0 opacity-20"
               style={{
                 backgroundImage:
                   'linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px)',
@@ -1066,7 +1126,7 @@ function RoomsSection({ view }: { view: DashboardViewModel }) {
             <div className="relative z-10 flex h-full flex-col justify-between">
               <div>
                 <div className="inline-flex items-center rounded-full border border-white/12 bg-white/[0.06] px-3 py-1 font-mono text-[10px] uppercase tracking-[0.24em] text-white/64">
-                  {room.status}
+                  {room.statusLabel}
                 </div>
 
                 <div className="mt-5 max-w-[24rem]">
@@ -1078,14 +1138,12 @@ function RoomsSection({ view }: { view: DashboardViewModel }) {
               <div className="mt-10 flex items-center justify-between gap-4">
                 <button
                   type="button"
-                  className={`rounded-full px-6 py-3 text-sm uppercase tracking-[0.18em] transition-all duration-300 hoverable ${
-                    room.featured
-                      ? 'bg-white text-black hover:scale-[0.985]'
-                      : 'border border-white/12 bg-white/[0.05] text-white hover:bg-white/[0.1]'
+                  className={`rounded-full px-6 py-3 text-sm uppercase tracking-[0.18em] transition-colors hoverable ${
+                    room.featured ? 'bg-white text-black hover:bg-white/92' : 'border border-white/12 bg-white/[0.05] text-white hover:bg-white/[0.08]'
                   }`}
                   onClick={() => openChat({ message: room.prompt })}
                 >
-                  {room.cta}
+                  {room.ctaLabel}
                 </button>
 
                 <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.22em] text-white/40">
@@ -1122,7 +1180,7 @@ function YantraAiSection({ view }: { view: DashboardViewModel }) {
       <div className="grid gap-10 md:grid-cols-12 md:gap-12">
         <div className="space-y-6 md:col-span-4">
           <div className="flex items-center gap-3">
-            <span className="h-3 w-3 rounded-full bg-white shadow-[0_0_14px_rgba(255,255,255,0.72)] animate-pulse" />
+            <span className="h-2.5 w-2.5 rounded-full bg-white/85" />
             <h2 className="font-display text-3xl font-medium tracking-tight text-white md:text-4xl">Yantra AI</h2>
           </div>
 
@@ -1138,7 +1196,7 @@ function YantraAiSection({ view }: { view: DashboardViewModel }) {
         </div>
 
         <div className="relative overflow-hidden rounded-[2rem] border border-white/8 bg-white/[0.04] p-6 backdrop-blur-[24px] md:col-span-8 md:p-8">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.12),transparent_30%),linear-gradient(180deg,rgba(255,255,255,0.03),transparent_40%,rgba(255,255,255,0.03))]" />
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),transparent_42%,rgba(255,255,255,0.02))]" />
 
           <div className="relative z-10 space-y-8">
             <div className="space-y-4">
@@ -1158,7 +1216,6 @@ function YantraAiSection({ view }: { view: DashboardViewModel }) {
             </div>
 
             <form onSubmit={handleSubmit} className="relative">
-              <div className="absolute inset-0 rounded-[2rem] bg-white/[0.04] blur-xl" />
               <div className="relative flex items-center gap-3 rounded-[2rem] border border-white/10 bg-black/26 px-5 py-4 transition-colors focus-within:border-white/20">
                 <input
                   value={draft}
@@ -1168,7 +1225,7 @@ function YantraAiSection({ view }: { view: DashboardViewModel }) {
                 />
                 <button
                   type="submit"
-                  className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white text-black transition-transform duration-300 hover:scale-[0.97] hoverable"
+                  className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white text-black transition-colors hover:bg-white/92 hoverable"
                   aria-label="Send prompt"
                 >
                   <ArrowRight size={16} />
@@ -1209,19 +1266,20 @@ function DashboardFooter() {
   );
 }
 
-function DashboardExperience({ fullName, firstName, profile }: StudentDashboardProps) {
+function DashboardExperience() {
+  const { profile } = useDashboardData();
   const view = buildDashboardViewModel(profile);
 
   return (
     <div className="relative min-h-screen bg-black text-white">
       <YantraAmbientBackground />
-      <DashboardNav fullName={fullName} />
+      <DashboardNav />
 
       <main className="mx-auto flex w-full max-w-[1440px] flex-col gap-24 px-5 pb-20 md:gap-32 md:px-8 md:pb-24">
-        <HeroSection firstName={firstName} profile={profile} view={view} />
+        <HeroSection firstName={profile.firstName || 'Learner'} profile={profile} view={view} />
         <OverviewSection view={view} />
-        <SkillsSection view={view} />
-        <RoomsSection view={view} />
+        <SkillsSection />
+        <RoomsSection />
         <YantraAiSection view={view} />
       </main>
 
@@ -1230,15 +1288,12 @@ function DashboardExperience({ fullName, firstName, profile }: StudentDashboardP
   );
 }
 
-export default function StudentDashboard({ fullName, firstName, email, profile }: StudentDashboardProps) {
+export default function StudentDashboard({ data }: StudentDashboardProps) {
   return (
     <ChatProvider>
-      <DashboardExperience
-        fullName={fullName || email || 'Yantra Learner'}
-        firstName={firstName || 'Learner'}
-        email={email}
-        profile={profile}
-      />
+      <DashboardDataContext.Provider value={data}>
+        <DashboardExperience />
+      </DashboardDataContext.Provider>
     </ChatProvider>
   );
 }

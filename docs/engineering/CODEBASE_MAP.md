@@ -5,27 +5,54 @@
 ```text
 Yantra/
 |-- app/
-|   |-- api/chat/route.ts
-|   |-- dashboard/page.tsx
+|   |-- api/
+|   |   |-- access-requests/route.ts
+|   |   |-- chat/
+|   |   |   |-- history/route.ts
+|   |   |   `-- route.ts
+|   |   `-- profile/route.ts
+|   |-- auth/
+|   |   |-- confirm/route.ts
+|   |   |-- reset-password/page.tsx
+|   |   `-- signout/route.ts
+|   |-- dashboard/
+|   |   |-- student-profile/page.tsx
+|   |   `-- page.tsx
+|   |-- login/page.tsx
+|   |-- signup/page.tsx
 |   |-- layout.tsx
 |   `-- page.tsx
 |-- docs/
-|   |-- engineering/
-|   |-- features/
-|   |-- handoff/
-|   |-- product/
-|   `-- reference/
 |-- src/
 |   |-- features/
+|   |   |-- access/AccessRequestForm.tsx
+|   |   |-- auth/AuthExperience.tsx
 |   |   |-- chat/
+|   |   |   |-- ChatMessageContent.tsx
 |   |   |   |-- ChatWidget.tsx
 |   |   |   `-- yantra-chat.ts
-|   |   |-- dashboard/StudentDashboard.tsx
-|   |   `-- marketing/MarketingLandingPage.tsx
+|   |   |-- dashboard/
+|   |   |   |-- StudentDashboard.tsx
+|   |   |   |-- StudentProfileCard.tsx
+|   |   |   |-- StudentProfilePage.tsx
+|   |   |   |-- student-profile-model.ts
+|   |   |   `-- YantraAmbientBackground.tsx
+|   |   |-- marketing/MarketingLandingPage.tsx
+|   |   `-- motion/ExperienceProvider.tsx
+|   |-- lib/
+|   |   `-- supabase/
+|   |       |-- access-requests.ts
+|   |       |-- chat-history.ts
+|   |       |-- client.ts
+|   |       |-- env.ts
+|   |       |-- profiles.ts
+|   |       |-- proxy.ts
+|   |       `-- server.ts
 |   `-- styles/globals.css
+|-- supabase/schema.sql
+|-- proxy.ts
 |-- package.json
 |-- next.config.ts
-|-- tsconfig.json
 `-- README.md
 ```
 
@@ -33,81 +60,103 @@ Yantra/
 
 ### `app/`
 
-- Next.js route entrypoints
-- global layout
-- server API route for chat
+Route entrypoints, redirect logic, auth utility handlers, and API route handlers.
 
-### `src/features/`
+### `src/features/access/`
 
-- product-facing feature implementation
-- organized by surface instead of keeping everything flat
+Client-side access request form used by the marketing surface.
 
-### `src/styles/`
+### `src/features/auth/`
 
-- global styling and shared theme tokens
+The login/signup experience, validation, browser-side Supabase auth calls, and status messaging.
 
-### `docs/`
+### `src/features/chat/`
 
-- product, engineering, reference, and handoff documentation
-- intended to become the onboarding surface for future contributors
+The chat widget, prompt/config helpers, and rich message rendering.
 
-## Reference And Legacy Items
+### `src/features/dashboard/`
 
-Current non-runtime reference assets now live in `docs/reference/`:
+The protected dashboard and student-profile UI, plus the local student profile model helpers.
 
-- `docs/reference/dashboard-sample/`
-  dashboard design inputs and visual references
-- `docs/reference/build-plan/`
-  broader build-plan PDF and extracted text
+### `src/features/marketing/`
 
-Legacy/local workspace artifacts still present in the root:
+The public landing page implementation. This is still a large single feature file.
+
+### `src/features/motion/`
+
+Shared experience helpers such as overlay locking used by the chat widget and mobile navigation layers.
+
+### `src/lib/supabase/`
+
+Shared Supabase integration code:
+
+- `env.ts` checks and returns required env vars
+- `client.ts` builds the browser client
+- `server.ts` builds the server client
+- `access-requests.ts` validates and inserts public access requests
+- `chat-history.ts` loads and upserts authenticated learner chat history
+- `proxy.ts` refreshes auth cookies for requests
+- `profiles.ts` loads, seeds, and updates learner profile data
+
+### `supabase/`
+
+Project SQL required for the current profile persistence layer.
+
+## Route Ownership
+
+### Public routes
+
+- `app/page.tsx` -> `src/features/marketing/MarketingLandingPage.tsx`
+- `app/login/page.tsx` -> `src/features/auth/AuthExperience.tsx`
+- `app/signup/page.tsx` -> `src/features/auth/AuthExperience.tsx`
+- `app/auth/reset-password/page.tsx` -> `src/features/auth/ResetPasswordExperience.tsx`
+
+### Protected routes
+
+- `app/dashboard/page.tsx` -> `src/features/dashboard/StudentDashboard.tsx`
+- `app/dashboard/student-profile/page.tsx` -> `src/features/dashboard/StudentProfilePage.tsx`
+
+### API routes
+
+- `app/api/chat/route.ts`
+- `app/api/chat/history/route.ts`
+- `app/api/profile/route.ts`
+- `app/api/access-requests/route.ts`
+
+### Auth utility routes
+
+- `app/auth/confirm/route.ts`
+- `app/auth/signout/route.ts`
+
+## Current Organization Notes
+
+- `MarketingLandingPage.tsx` is still the largest single UI file in the repo.
+- `StudentDashboard.tsx` and `StudentProfilePage.tsx` still contain a significant amount of presentation data inline.
+- `src/lib/supabase/profiles.ts` is the main persistence boundary for authenticated learner profile behavior.
+- `proxy.ts` at the repo root is required for Supabase SSR cookie refresh and should be treated as active runtime code, not a leftover file.
+
+## Reference And Non-Runtime Items
+
+### `docs/reference/`
+
+Holds design and product inputs:
+
+- `dashboard-sample/`
+- `Login-signup-sample/`
+- `build-plan/`
+
+### Root-level local artifacts
 
 - `dist/`
-  likely old build artifact from the previous tooling setup
 - `node_modules_broken/`
-  legacy dependency folder that should be reviewed before removal
+- `tmp/`
 
-## Current File-Organization Pain Points
-
-- `src/features/marketing/MarketingLandingPage.tsx` is still large and combines multiple landing-page sections in one file.
-- Some old root files are already outside the active Next.js runtime and should be reviewed before cleanup.
-- There are local legacy deletions in the workspace that have not been intentionally resolved yet.
+These are not part of the active application runtime and should not be deleted casually without approval.
 
 ## Safe Next Organization Steps
 
-These are recommendations only. They are not executed yet.
-
-### High-confidence moves
-
-- keep all new documentation under `docs/`
-- keep new route code in `app/`
-- keep route-specific UI in `src/features/`
-- keep global styles in `src/styles/`
-
-### Cleanup moves that should happen only after approval
-
-- review whether `dist/` should be removed from version control
-- review whether `node_modules_broken/` should be removed from the workspace
-- review old deleted legacy files and decide whether to archive, restore, or remove them intentionally
-- split the landing page into smaller files if desired
-
-## Suggested Future Structure
-
-```text
-Yantra/
-|-- app/
-|-- docs/
-|   |-- engineering/
-|   |-- handoff/
-|   |-- product/
-|   `-- reference/
-|-- src/
-|   |-- features/
-|   |   |-- chat/
-|   |   |-- dashboard/
-|   |   `-- marketing/
-|   `-- styles/
-`-- public/
-```
-
-That future layout is a recommendation for later work, not a requirement for the current repo.
+- keep new route handlers inside `app/`
+- keep Supabase-specific helpers inside `src/lib/supabase/`
+- keep route-specific UI in the matching `src/features/` folder
+- split `MarketingLandingPage.tsx` into section files when that cleanup is explicitly chosen
+- extract large hardcoded dashboard/profile config blocks into typed data modules if those surfaces continue to grow

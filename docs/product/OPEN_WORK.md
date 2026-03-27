@@ -1,73 +1,64 @@
 # Open Work
 
-## Highest-Priority Unbuilt Work
+## Highest-Priority Product And Engineering Work
 
-### Platform Foundation
+### Foundation hardening
 
-- add authentication
-- add student profiles
-- add persistent storage
-- define content and roadmap schema
-- define analytics/event model
+- add tests for auth redirects, profile reads, and profile writes
+- persist access requests instead of only logging them
+- implement password reset
+- decide whether Google sign-in should be real or remain deferred
+- add basic monitoring and error reporting
 
-### Dashboard
+### Dashboard data
 
-- replace hardcoded arrays with real data
-- connect dashboard state to a student profile
-- support progress persistence
-- define room unlock logic
-- add real next-step recommendations
+- replace hardcoded dashboard arrays with typed data contracts
+- connect dashboard progress and milestones to persistent learner state
+- define room unlock and recommendation logic
+- replace static curriculum and performance sections with real models
 
-### Chat
+### Chat continuity
 
-- persist chat sessions
-- add better error handling and monitoring
-- support richer prompts from product context
-- prepare for multi-LLM routing if needed later
+- persist chat sessions for authenticated learners
+- add richer learner context to prompts
+- decide on streaming versus non-streaming responses
+- add operational visibility for chat failures
 
-### Practice Rooms
+### Practice rooms
 
 - Python execution environment
-- neural net visual builder
+- neural-net builder
 - dataset explorer
 - prompt lab
 - shared evaluation and feedback framework
 
-### Institutional Features
+### Institution and outcome layers
 
 - teacher dashboard
 - class analytics
-- classroom mode
-- smartboard UI behavior
+- classroom mode or smartboard behavior
+- certification workflows
+- portfolio and hiring signals
 
-## Product Gaps
+## Current Product Gaps
 
-- no real learner onboarding
-- no actual personalization engine
-- no real certification system
-- no project submission workflow
-- no hiring or placement flow
+- the learner identity layer exists, but onboarding is still thin
+- the dashboard feels personalized, but most data is static
+- the access pipeline exists, but requests are not stored or reviewed
+- the profile exists, but broader learner state does not
 
-## Engineering Gaps
+## Current Engineering Gaps
 
-- no database
-- no auth provider
-- no test suite
-- no API layer beyond chat
-- no content management workflow
-- no monitoring or observability setup
-
-## Content Gaps
-
-- no structured curriculum in code
-- no lesson repository
-- no guided challenge catalog
-- no dataset library
+- no automated test suite
+- no persistent chat storage
+- no analytics or observability layer
+- no production access-request persistence
+- no content-management workflow
 
 ## Cleanup Work That Needs Approval
 
 These are intentionally not executed yet:
 
-- moving root-level reference assets into `docs/reference/`
-- cleaning old root artifacts
-- deciding whether old deleted files should be restored, archived, or removed from version control
+- deleting root-level local artifacts such as `dist/` or `node_modules_broken/`
+- moving or removing reference assets under `docs/reference/`
+- large-scale file-organization cleanup that is unrelated to runtime behavior
