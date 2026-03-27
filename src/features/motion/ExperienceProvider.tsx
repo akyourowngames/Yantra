@@ -5,6 +5,7 @@ import { usePathname, useSearchParams } from 'next/navigation';
 import { AnimatePresence, motion } from 'motion/react';
 import {
   createContext,
+  Suspense,
   useCallback,
   useContext,
   useEffect,
@@ -414,7 +415,9 @@ export function ExperienceProvider({ children }: { children: ReactNode }) {
   return (
     <ExperienceContext.Provider value={value}>
       {children}
-      <RouteTransitionOverlay />
+      <Suspense fallback={null}>
+        <RouteTransitionOverlay />
+      </Suspense>
     </ExperienceContext.Provider>
   );
 }
