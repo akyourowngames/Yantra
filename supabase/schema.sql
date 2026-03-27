@@ -50,3 +50,201 @@ for update
 to authenticated
 using ((select auth.uid()) = id)
 with check ((select auth.uid()) = id);
+
+create table if not exists public.student_dashboard_paths (
+  user_id uuid primary key references auth.users (id) on delete cascade,
+  path_title text not null,
+  path_description text not null,
+  path_status_label text not null default 'Live Path',
+  path_progress integer not null default 0 check (path_progress >= 0 and path_progress <= 100),
+  current_focus text not null,
+  recommended_action_title text not null,
+  recommended_action_description text not null,
+  recommended_action_prompt text not null,
+  learning_track_title text not null,
+  learning_track_description text not null,
+  completion_estimate_label text not null,
+  mastery_progress integer not null default 0 check (mastery_progress >= 0 and mastery_progress <= 100),
+  mastery_unlocked_count integer not null default 0 check (mastery_unlocked_count >= 0),
+  mastery_total_count integer not null default 0 check (mastery_total_count >= 0),
+  next_session_date_day text not null,
+  next_session_date_month text not null,
+  next_session_title text not null,
+  next_session_day_label text not null,
+  next_session_time_label text not null,
+  next_session_instructor_name text not null,
+  next_session_instructor_role text not null,
+  next_session_instructor_image_url text not null,
+  weekly_completed_sessions integer not null default 0 check (weekly_completed_sessions >= 0),
+  weekly_change_label text not null,
+  momentum_summary text not null,
+  focus_summary text not null,
+  consistency_summary text not null
+);
+
+create table if not exists public.student_skill_progress (
+  user_id uuid not null references auth.users (id) on delete cascade,
+  skill_key text not null,
+  title text not null,
+  description text not null,
+  level_label text not null,
+  progress integer not null default 0 check (progress >= 0 and progress <= 100),
+  icon_key text not null check (icon_key in ('python', 'logic', 'ml', 'data', 'networks', 'prompt')),
+  tone_key text not null check (tone_key in ('primary', 'soft', 'muted')),
+  locked boolean not null default false,
+  sort_order integer not null default 0,
+  primary key (user_id, skill_key)
+);
+
+create table if not exists public.student_curriculum_nodes (
+  user_id uuid not null references auth.users (id) on delete cascade,
+  node_key text not null,
+  module_label text not null,
+  title text not null,
+  description text not null,
+  status_label text not null,
+  unlocked boolean not null default false,
+  sort_order integer not null default 0,
+  primary key (user_id, node_key)
+);
+
+create table if not exists public.student_practice_rooms (
+  user_id uuid not null references auth.users (id) on delete cascade,
+  room_key text not null,
+  title text not null,
+  description text not null,
+  status_label text not null,
+  cta_label text not null,
+  prompt text not null,
+  featured boolean not null default false,
+  texture_key text not null check (texture_key in ('python-room', 'neural-builder', 'data-explorer', 'prompt-lab')),
+  sort_order integer not null default 0,
+  primary key (user_id, room_key)
+);
+
+create table if not exists public.student_weekly_activity (
+  user_id uuid not null references auth.users (id) on delete cascade,
+  day_key text not null,
+  day_label text not null,
+  container_height integer not null check (container_height >= 0),
+  fill_height integer not null check (fill_height >= 0 and fill_height <= 100),
+  highlighted boolean not null default false,
+  sort_order integer not null default 0,
+  primary key (user_id, day_key)
+);
+
+alter table public.student_dashboard_paths enable row level security;
+alter table public.student_skill_progress enable row level security;
+alter table public.student_curriculum_nodes enable row level security;
+alter table public.student_practice_rooms enable row level security;
+alter table public.student_weekly_activity enable row level security;
+
+drop policy if exists "Users can view their own dashboard path" on public.student_dashboard_paths;
+create policy "Users can view their own dashboard path"
+on public.student_dashboard_paths
+for select
+to authenticated
+using ((select auth.uid()) = user_id);
+
+drop policy if exists "Users can insert their own dashboard path" on public.student_dashboard_paths;
+create policy "Users can insert their own dashboard path"
+on public.student_dashboard_paths
+for insert
+to authenticated
+with check ((select auth.uid()) = user_id);
+
+drop policy if exists "Users can update their own dashboard path" on public.student_dashboard_paths;
+create policy "Users can update their own dashboard path"
+on public.student_dashboard_paths
+for update
+to authenticated
+using ((select auth.uid()) = user_id)
+with check ((select auth.uid()) = user_id);
+
+drop policy if exists "Users can view their own skill progress" on public.student_skill_progress;
+create policy "Users can view their own skill progress"
+on public.student_skill_progress
+for select
+to authenticated
+using ((select auth.uid()) = user_id);
+
+drop policy if exists "Users can insert their own skill progress" on public.student_skill_progress;
+create policy "Users can insert their own skill progress"
+on public.student_skill_progress
+for insert
+to authenticated
+with check ((select auth.uid()) = user_id);
+
+drop policy if exists "Users can update their own skill progress" on public.student_skill_progress;
+create policy "Users can update their own skill progress"
+on public.student_skill_progress
+for update
+to authenticated
+using ((select auth.uid()) = user_id)
+with check ((select auth.uid()) = user_id);
+
+drop policy if exists "Users can view their own curriculum nodes" on public.student_curriculum_nodes;
+create policy "Users can view their own curriculum nodes"
+on public.student_curriculum_nodes
+for select
+to authenticated
+using ((select auth.uid()) = user_id);
+
+drop policy if exists "Users can insert their own curriculum nodes" on public.student_curriculum_nodes;
+create policy "Users can insert their own curriculum nodes"
+on public.student_curriculum_nodes
+for insert
+to authenticated
+with check ((select auth.uid()) = user_id);
+
+drop policy if exists "Users can update their own curriculum nodes" on public.student_curriculum_nodes;
+create policy "Users can update their own curriculum nodes"
+on public.student_curriculum_nodes
+for update
+to authenticated
+using ((select auth.uid()) = user_id)
+with check ((select auth.uid()) = user_id);
+
+drop policy if exists "Users can view their own practice rooms" on public.student_practice_rooms;
+create policy "Users can view their own practice rooms"
+on public.student_practice_rooms
+for select
+to authenticated
+using ((select auth.uid()) = user_id);
+
+drop policy if exists "Users can insert their own practice rooms" on public.student_practice_rooms;
+create policy "Users can insert their own practice rooms"
+on public.student_practice_rooms
+for insert
+to authenticated
+with check ((select auth.uid()) = user_id);
+
+drop policy if exists "Users can update their own practice rooms" on public.student_practice_rooms;
+create policy "Users can update their own practice rooms"
+on public.student_practice_rooms
+for update
+to authenticated
+using ((select auth.uid()) = user_id)
+with check ((select auth.uid()) = user_id);
+
+drop policy if exists "Users can view their own weekly activity" on public.student_weekly_activity;
+create policy "Users can view their own weekly activity"
+on public.student_weekly_activity
+for select
+to authenticated
+using ((select auth.uid()) = user_id);
+
+drop policy if exists "Users can insert their own weekly activity" on public.student_weekly_activity;
+create policy "Users can insert their own weekly activity"
+on public.student_weekly_activity
+for insert
+to authenticated
+with check ((select auth.uid()) = user_id);
+
+drop policy if exists "Users can update their own weekly activity" on public.student_weekly_activity;
+create policy "Users can update their own weekly activity"
+on public.student_weekly_activity
+for update
+to authenticated
+using ((select auth.uid()) = user_id)
+with check ((select auth.uid()) = user_id);

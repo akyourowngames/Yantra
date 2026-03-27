@@ -2,97 +2,93 @@
 
 ## Current Phase
 
-Yantra is in an early product-foundation phase.
+Yantra is in the transition from product shell to application foundation.
 
 What already exists:
 
 - branded public landing page
-- immersive dashboard concept at `/dashboard`
+- login and signup flows
+- Supabase-backed protected routes
+- persisted student profiles
 - Gemini-backed chat assistant
-- Vercel deployment on Next.js
+- access-request submission flow
 
-What does not exist yet:
+What is still incomplete:
 
-- auth
-- saved student profiles
+- persistent chat sessions
 - dynamic roadmap engine
 - real practice-room tooling
-- analytics
-- teacher workflows
+- analytics and observability
+- teacher and institution workflows
+- access-request storage and review workflow
 
 ## Practical Roadmap
 
-### Phase 1: Product Foundation
+### Phase 1: Solidify The App Foundation
 
-Goal: turn the current visual/product shell into a real app foundation.
-
-Priority items:
-
-- user authentication
-- student profile schema
-- persistence for conversations and progress
-- dashboard data model
-- admin-safe environment setup
-
-### Phase 2: Learning Core
-
-Goal: make the student experience truly adaptive.
+Goal: harden what already exists.
 
 Priority items:
 
-- skill diagnosis flow
-- roadmap generator
-- dynamic dashboard metrics
-- lesson and module model
-- teacher-like memory and continuity
+- add tests around auth redirects and `/api/profile`
+- persist access requests
+- add password reset
+- decide whether to support Google sign-in
+- remove ambiguity in setup and deployment flow
 
-### Phase 3: Practice Rooms
+### Phase 2: Make The Dashboard Truly Data-Driven
 
-Goal: make Yantra hands-on instead of only conversational.
+Goal: replace the presentational dashboard shell with real learner state.
+
+Priority items:
+
+- typed learner dashboard data model
+- dynamic progress and milestone data
+- curriculum state tied to the learner profile
+- room unlock logic
+- next-step recommendation logic
+
+### Phase 3: Add Persistent Learning Continuity
+
+Goal: preserve learner context between sessions.
+
+Priority items:
+
+- persistent chat history
+- contextual prompt inputs from learner profile and progress
+- event tracking for key learner actions
+- auditability around important profile and learning changes
+
+### Phase 4: Build Practice Rooms
+
+Goal: make Yantra hands-on instead of mostly explanatory.
 
 Priority items:
 
 - Python practice room
-- neural network builder
+- neural-network builder
 - dataset explorer
 - prompt lab
-- result tracking and feedback loops
+- evaluation and feedback loops
 
-### Phase 4: Institutional Layer
+### Phase 5: Expand Into Institutional And Outcome Layers
 
-Goal: support schools, teachers, and classroom workflows.
+Goal: turn the learner product into a broader platform.
 
 Priority items:
 
 - teacher dashboard
 - class analytics
-- smartboard mode
-- classroom sync
-- school/admin controls
-
-### Phase 5: Outcome Layer
-
-Goal: turn progress into trusted external proof.
-
-Priority items:
-
+- classroom and smartboard behaviors
 - certifications
-- project portfolio generation
-- employer-facing skill signals
-- job matching and hiring workflows
-
-## Reference Roadmap From The Build Plan
-
-The PDF roadmap describes three larger phases:
-
-- MVP
-- Full Platform
-- Scale
-
-Those ideas still fit, but the repo should be worked through the practical phases above so contributors can translate strategy into actual code.
+- portfolio and employer-facing signals
 
 ## Rule For Contributors
 
-Before starting a feature, decide which roadmap phase it supports.
+Before starting a feature, be explicit about whether it:
 
-If a task does not clearly support one of the phases above, it is likely too vague or premature.
+- hardens the current foundation
+- makes existing learner surfaces truly data-driven
+- adds new product surface area
+
+That distinction matters because the repo already has a real auth/profile base. Work that ignores it will usually create churn.

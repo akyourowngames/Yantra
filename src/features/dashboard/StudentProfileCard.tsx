@@ -15,7 +15,7 @@ type StudentProfileCardProps = {
 };
 
 const profileCardSurfaceClassName =
-  'relative overflow-hidden rounded-[2rem] border border-white/8 bg-white/[0.045] p-8 shadow-[0_24px_72px_rgba(0,0,0,0.24)] backdrop-blur-[28px]';
+  'relative overflow-hidden rounded-[2rem] border border-white/8 bg-white/[0.04] p-8 shadow-[0_20px_54px_rgba(0,0,0,0.22)] backdrop-blur-[24px]';
 const profileCardInputClassName =
   'w-full rounded-2xl border border-white/10 bg-white/[0.05] px-4 py-3 text-white outline-none transition-all focus:border-white/40 focus:bg-white/[0.07] cursor-text';
 
@@ -77,8 +77,8 @@ const StudentProfileCard = forwardRef<StudentProfileCardHandle, StudentProfileCa
     <section className="group relative lg:col-span-5">
       <div className={profileCardSurfaceClassName}>
         <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/18 to-transparent" />
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(255,255,255,0.08)_0%,transparent_52%)]" />
-        <div className="pointer-events-none absolute right-[-16%] top-[-14%] h-32 w-32 rounded-full bg-white/[0.045] blur-[72px]" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(255,255,255,0.05)_0%,transparent_52%)]" />
+        <div className="pointer-events-none absolute right-[-16%] top-[-14%] h-28 w-28 rounded-full bg-white/[0.03] blur-[56px]" />
 
         {!isEditing ? (
           <div className="relative space-y-8">

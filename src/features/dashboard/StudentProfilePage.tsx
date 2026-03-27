@@ -51,7 +51,7 @@ type CurriculumItem = {
 
 type ActiveSection = 'overview' | 'roster' | 'curriculum' | 'performance' | 'help';
 
-type PanelKey = 'notifications' | 'settings' | 'help' | 'roster' | null;
+type PanelKey = 'notifications' | 'settings' | 'help' | null;
 type StudentProfilePageProps = {
   initialProfileData: StudentProfile;
   defaultProfileData: StudentProfile;
@@ -149,7 +149,7 @@ const facultyAvatars = [
 ];
 
 const profileSectionClassName =
-  'relative overflow-hidden rounded-[2rem] border border-white/8 bg-white/[0.035] p-8 shadow-[0_24px_72px_rgba(0,0,0,0.24)] backdrop-blur-[24px]';
+  'relative overflow-hidden rounded-[2rem] border border-white/8 bg-white/[0.03] p-8 shadow-[0_20px_54px_rgba(0,0,0,0.22)] backdrop-blur-[22px]';
 const profileInsetCardClassName = 'rounded-[1.75rem] border border-white/8 bg-white/[0.03] p-6';
 const profilePanelCardClassName = 'rounded-2xl border border-white/8 bg-white/[0.04] p-4';
 const profileActionButtonClassName =
@@ -167,9 +167,9 @@ function PanelShell({
   onClose: () => void;
 }) {
   return (
-    <section className="fixed right-4 top-24 z-[60] w-[min(24rem,calc(100vw-2rem))] overflow-hidden rounded-[2rem] border border-white/8 bg-black/78 p-6 shadow-[0_30px_80px_rgba(0,0,0,0.45)] backdrop-blur-[28px] md:right-8">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.14),transparent_30%),linear-gradient(180deg,rgba(255,255,255,0.04),transparent_38%,rgba(255,255,255,0.03))]" />
-      <div className="pointer-events-none absolute right-[-16%] top-[-14%] h-40 w-40 rounded-full bg-white/[0.08] blur-[90px]" />
+    <section className="fixed right-4 top-24 z-[60] w-[min(24rem,calc(100vw-2rem))] overflow-hidden rounded-[2rem] border border-white/8 bg-black/78 p-6 shadow-[0_26px_60px_rgba(0,0,0,0.42)] backdrop-blur-[24px] md:right-8">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.08),transparent_30%),linear-gradient(180deg,rgba(255,255,255,0.03),transparent_38%,rgba(255,255,255,0.02))]" />
+      <div className="pointer-events-none absolute right-[-16%] top-[-14%] h-32 w-32 rounded-full bg-white/[0.04] blur-[64px]" />
 
       <div className="relative z-10">
         <div className="mb-5 flex items-start justify-between gap-4">
@@ -503,7 +503,7 @@ export default function StudentProfilePage({
 
   const openRosterView = (message = 'Opened roster view.') => {
     setActiveSection('roster');
-    setActivePanel('roster');
+    setActivePanel(null);
     scrollToSection(ROSTER_SECTION_ID);
     showStatusMessage(message);
   };
@@ -638,46 +638,6 @@ export default function StudentProfilePage({
             <div className="font-display text-lg font-medium text-white">Go to dashboard</div>
             <div className="mt-1 text-sm text-white/52">Return to the main student dashboard overview.</div>
           </Link>
-        </PanelShell>
-      )}
-
-      {activePanel === 'roster' && (
-        <PanelShell title="Student Roster" eyebrow="Quick Access" onClose={() => setActivePanel(null)}>
-          <div className={profilePanelCardClassName}>
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <div className="font-display text-lg font-medium text-white">{profile.name}</div>
-                <div className="mt-1 text-sm text-white/52">
-                  {profile.classDesignation} · {profile.skillLevel} · {profile.progress}% complete
-                </div>
-              </div>
-              <div className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-white/72">
-                Current
-              </div>
-            </div>
-
-            <div className="mt-4 flex flex-wrap gap-3">
-              <button
-                type="button"
-                className="rounded-full border border-white/12 bg-white/[0.05] px-4 py-2 font-mono text-[10px] uppercase tracking-[0.16em] text-white transition-colors hover:bg-white/[0.09] cursor-pointer"
-                onClick={() => {
-                  setActiveSection('overview');
-                  scrollToSection(PROFILE_SECTION_ID);
-                  setActivePanel(null);
-                  showStatusMessage('Roster focused on the active student.');
-                }}
-              >
-                Open record
-              </button>
-
-              <Link
-                href="/dashboard"
-                className="rounded-full border border-white/12 bg-white/[0.05] px-4 py-2 font-mono text-[10px] uppercase tracking-[0.16em] text-white transition-colors hover:bg-white/[0.09] cursor-pointer"
-              >
-                Dashboard view
-              </Link>
-            </div>
-          </div>
         </PanelShell>
       )}
 

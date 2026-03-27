@@ -1,46 +1,99 @@
 # Setup And Deployment
 
-## Local Development
-
-### Requirements
+## Requirements
 
 - Node.js 20+
 - npm
+- a Supabase project
+- a Gemini API key
 
-### Install
+## Install
 
 ```bash
 npm install
 ```
 
-### Environment
+## Environment Variables
 
-Copy `.env.example` and provide a Gemini key:
+Create `.env.local` and set:
 
 ```env
-GEMINI_API_KEY=YOUR_KEY_HERE
+GEMINI_API_KEY="YOUR_GEMINI_API_KEY"
+NEXT_PUBLIC_SUPABASE_URL="https://YOUR_PROJECT_REF.supabase.co"
+NEXT_PUBLIC_SUPABASE_ANON_KEY="YOUR_SUPABASE_ANON_KEY"
 ```
 
-The server route also accepts `GOOGLE_API_KEY`, but `GEMINI_API_KEY` is the documented default.
+### Notes
 
-### Run
+- `GEMINI_API_KEY` is required by `POST /api/chat`.
+- `GOOGLE_API_KEY` is also accepted by the chat route as a fallback, but `GEMINI_API_KEY` is the documented default.
+- `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` are required for login, signup, protected routes, and profile persistence.
+
+## Required Supabase Step
+
+Run the SQL in `supabase/schema.sql` against your Supabase project before using the dashboard profile flow.
+
+That script creates:
+
+- `public.profiles`
+- the `updated_at` trigger
+- row-level security policies for authenticated users
+
+## Local Development
+
+### Start the app
 
 ```bash
 npm run dev
 ```
 
-### Build
+### Validate TypeScript
 
 ```bash
 npm run lint
+```
+
+Current `lint` behavior is:
+
+```bash
+next typegen && npx tsc --noEmit
+```
+
+### Production build
+
+```bash
 npm run build
 ```
 
-## Main Routes
+## Main Routes To Test Locally
 
-- `/` marketing landing page
-- `/dashboard` student dashboard concept
-- `/api/chat` AI chat endpoint
+### Public
+
+- `/`
+- `/login`
+- `/signup`
+
+### Protected
+
+- `/dashboard`
+- `/dashboard/student-profile`
+
+### APIs
+
+- `/api/chat`
+- `/api/profile`
+- `/api/access-requests`
+
+## Recommended Local Smoke Test
+
+1. Start the app with `npm run dev`.
+2. Open `/signup` and create an account.
+3. If email confirmation is enabled, follow the email link back to `/auth/confirm`.
+4. Open `/dashboard` and confirm the route is accessible after sign-in.
+5. Open `/dashboard/student-profile`, edit the record, and save it.
+6. Reload the page to confirm the profile data persisted.
+7. Open the chat widget and send a prompt.
+8. Submit the landing-page access form and confirm the success state appears.
 
 ## Deployment
 
@@ -48,55 +101,75 @@ npm run build
 
 - Vercel
 
-### Required Settings
+### Expected settings
 
-- Framework Preset: `Next.js`
-- Production Branch: `main`
-- Build Command: default Next.js command or `next build`
-- Output Directory: default Next.js output
-- Install Command: default npm install
+- Framework preset: `Next.js`
+- Install command: default `npm install`
+- Build command: default Next.js build or `next build`
+- Output directory: default Next.js output
+- Production branch: typically `main`
 
-### Required Environment Variables
+### Required environment variables in Vercel
 
 - `GEMINI_API_KEY`
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 
-## File Organization Notes
+## Supabase Auth URL Configuration
 
-- route entrypoints belong in `app/`
-- feature code belongs in `src/features/`
-- global styling belongs in `src/styles/`
-- reference materials belong in `docs/reference/`
+Configure these in Supabase Auth settings:
 
-## Migration Notes
+- Site URL:
+  - local: `http://localhost:3000`
+  - production: your deployed domain
+- Redirect URLs:
+  - `http://localhost:3000/auth/confirm`
+  - `https://YOUR-PRODUCTION-DOMAIN/auth/confirm`
 
-This repo used to be Vite-based and is now Next.js-based.
+## Deployment Reality
 
-Rules for future contributors:
+### What depends on Supabase being configured
 
-- do not reintroduce `vite.config.ts`
-- do not add Vite-specific packages unless the project is intentionally migrated again
-- if Vercel ever fails with Vite-related errors, check for leftover tracked config or stale project settings first
+- login/signup becoming usable
+- protected dashboard access
+- `/api/profile`
+- student-profile persistence
 
-## Build Troubleshooting
+### What still works without Supabase
 
-### Chat route fails in production
+- the marketing page
+- the access-request form
+- the chat route, as long as a Gemini key is present
+
+Without Supabase env vars, auth pages stay visible but display configuration guidance, and protected dashboard routes redirect back to `/login`.
+
+## Troubleshooting
+
+### Chat fails with a server error
 
 Check:
 
-- `GEMINI_API_KEY` is set in Vercel
-- the deployment is using the `main` branch
-- the build logs do not reference legacy Vite files
+- `GEMINI_API_KEY` or `GOOGLE_API_KEY` is set
+- the deployment has restarted after env changes
+- the request body contains at least one valid user/assistant message
 
-### Dashboard route does not appear
+### Dashboard redirects back to login unexpectedly
 
 Check:
 
-- `app/dashboard/page.tsx` exists in the deployed commit
-- the deployment completed successfully
-- the URL path is `/dashboard`, not `/`
+- `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` are set
+- `supabase/schema.sql` has been applied
+- Supabase Site URL and Redirect URLs are configured correctly
+- cookies are being set and not blocked in the current environment
 
-## Current Deployment Reality
+### Profile page loads but save fails
 
-- The codebase builds successfully locally with `npm run lint` and `npm run build`.
-- Vercel production should track `main`.
-- Any future deployment failures should be logged in `handoff/CURRENT_STATE.md` if they become recurring.
+Check:
+
+- the authenticated user exists
+- the `public.profiles` table and RLS policies were created from `supabase/schema.sql`
+- the request payload still matches `StudentProfile`
+
+### Access request succeeds but nothing is stored
+
+That is expected right now. `POST /api/access-requests` validates and logs the request, but it does not persist records yet.
