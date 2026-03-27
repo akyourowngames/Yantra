@@ -257,7 +257,7 @@ function ChatPanel({
       {!isOpen && (
         <motion.button
           type="button"
-          className="fixed bottom-4 right-4 z-[70] flex items-center gap-3 rounded-full border border-white/10 bg-black/80 px-5 py-3 text-white shadow-[0_18px_60px_rgba(0,0,0,0.45)] backdrop-blur-xl hoverable md:bottom-6 md:right-6"
+          className="fixed bottom-[calc(env(safe-area-inset-bottom)+1rem)] right-4 z-[70] flex items-center gap-3 rounded-full border border-white/10 bg-black/80 px-5 py-3 text-white shadow-[0_18px_60px_rgba(0,0,0,0.45)] backdrop-blur-xl hoverable md:bottom-6 md:right-6"
           onClick={onOpen}
           whileHover={{ y: -2, scale: 1.01 }}
           whileTap={{ scale: 0.98 }}

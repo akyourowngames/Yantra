@@ -104,7 +104,7 @@ function Nav() {
     <>
       <motion.nav
         className={`fixed top-0 z-50 w-full transition-all duration-500 ${
-          scrolled ? 'border-b border-white/10 bg-black/80 backdrop-blur-xl' : 'bg-transparent py-2'
+          scrolled ? 'border-b border-white/10 bg-black/80 backdrop-blur-xl' : 'bg-transparent'
         }`}
         initial={{ y: -100 }}
         animate={{ y: 0 }}
@@ -204,7 +204,7 @@ function Hero() {
   const title = 'YANTRA';
 
   return (
-    <section className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-6 pb-32 pt-32">
+    <section className="relative flex min-h-[100svh] flex-col items-center justify-center overflow-hidden px-6 pb-28 pt-28 sm:min-h-screen sm:pb-32 sm:pt-32">
       <div className="z-10 mx-auto flex w-full max-w-5xl flex-col items-center text-center">
         <motion.div
           className="mb-12 rounded-full border border-white/10 bg-white/5 px-6 py-2 text-center font-mono text-xs uppercase tracking-[0.2em] text-muted backdrop-blur-md md:mb-16 md:text-sm"
@@ -263,7 +263,7 @@ function Hero() {
         </motion.p>
 
         <motion.div
-          className="absolute bottom-8 flex flex-col items-center gap-4"
+          className="absolute bottom-[calc(env(safe-area-inset-bottom)+1.5rem)] flex flex-col items-center gap-4 sm:bottom-8"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.2, duration: 1 }}
@@ -567,7 +567,7 @@ function Footer() {
 export default function MarketingLandingPage() {
   return (
     <ChatProvider>
-      <div className="min-h-screen bg-transparent text-white selection:bg-white selection:text-black">
+      <div className="min-h-[100svh] bg-transparent text-white selection:bg-white selection:text-black sm:min-h-screen">
         <FluidBackground />
         <Nav />
         <main>
