@@ -14,6 +14,8 @@ import {
 } from 'react';
 import { useOverlayLock } from '@/src/features/motion/ExperienceProvider';
 import {
+  MAX_PERSISTED_CHAT_MESSAGES,
+  normalizeYantraChatMessages,
   yantraQuickPrompts,
   yantraWelcomeMessage,
   type YantraChatMessage,
@@ -50,6 +52,10 @@ const ChatWidgetContext = createContext<ChatWidgetContextValue | null>(null);
 
 function assistantMessage(content: string): YantraChatMessage {
   return { role: 'assistant', content };
+}
+
+function buildDefaultMessages() {
+  return [assistantMessage(yantraWelcomeMessage)];
 }
 
 function ChatPanel({
@@ -274,16 +280,23 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const [isSending, setIsSending] = useState(false);
   const [input, setInput] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [messages, setMessages] = useState<YantraChatMessage[]>([assistantMessage(yantraWelcomeMessage)]);
+  const [messages, setMessages] = useState<YantraChatMessage[]>(buildDefaultMessages);
   const messagesRef = useRef(messages);
+  const isSendingRef = useRef(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
+  const historyStateRef = useRef<'idle' | 'loading' | 'loaded' | 'unavailable'>('idle');
+  const historyPromiseRef = useRef<Promise<YantraChatMessage[]> | null>(null);
 
   useOverlayLock('chat-widget', isOpen);
 
   useEffect(() => {
     messagesRef.current = messages;
   }, [messages]);
+
+  useEffect(() => {
+    isSendingRef.current = isSending;
+  }, [isSending]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -299,6 +312,14 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   }, [messages, isSending, isOpen]);
 
   useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    void ensureHistoryLoaded();
+  }, [isOpen]);
+
+  useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         setIsOpen(false);
@@ -309,20 +330,76 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener('keydown', handleEscape);
   }, []);
 
+  const commitMessages = (nextMessages: YantraChatMessage[]) => {
+    messagesRef.current = nextMessages;
+    setMessages(nextMessages);
+  };
+
+  const ensureHistoryLoaded = async () => {
+    if (historyStateRef.current === 'loaded' || historyStateRef.current === 'unavailable') {
+      return messagesRef.current;
+    }
+
+    if (historyPromiseRef.current) {
+      return historyPromiseRef.current;
+    }
+
+    historyStateRef.current = 'loading';
+    historyPromiseRef.current = (async () => {
+      try {
+        const response = await fetch('/api/chat/history', {
+          cache: 'no-store',
+        });
+
+        if (response.status === 401) {
+          historyStateRef.current = 'unavailable';
+          return messagesRef.current;
+        }
+
+        if (!response.ok) {
+          historyStateRef.current = 'unavailable';
+          return messagesRef.current;
+        }
+
+        const data = (await response.json()) as { messages?: YantraChatMessage[] };
+        const persistedMessages = normalizeYantraChatMessages(data.messages, MAX_PERSISTED_CHAT_MESSAGES);
+        historyStateRef.current = 'loaded';
+
+        if (persistedMessages.length > 0) {
+          commitMessages(persistedMessages);
+          return persistedMessages;
+        }
+
+        return messagesRef.current;
+      } catch {
+        historyStateRef.current = 'unavailable';
+        return messagesRef.current;
+      } finally {
+        historyPromiseRef.current = null;
+      }
+    })();
+
+    return historyPromiseRef.current;
+  };
+
   async function sendMessage(rawMessage: string) {
     const content = rawMessage.trim();
 
-    if (!content || isSending) {
+    if (!content || isSendingRef.current) {
       return;
     }
 
-    const nextMessages: YantraChatMessage[] = [...messagesRef.current, { role: 'user', content }];
-    messagesRef.current = nextMessages;
+    const baseMessages = await ensureHistoryLoaded();
+    const nextMessages = normalizeYantraChatMessages(
+      [...baseMessages, { role: 'user', content }],
+      MAX_PERSISTED_CHAT_MESSAGES,
+    );
 
-    setMessages(nextMessages);
+    commitMessages(nextMessages);
     setInput('');
     setError(null);
     setIsOpen(true);
+    isSendingRef.current = true;
     setIsSending(true);
 
     try {
@@ -341,14 +418,17 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         throw new Error(data.error || 'Yantra could not respond right now.');
       }
 
-      const updatedMessages = [...nextMessages, assistantMessage(data.reply.trim())];
-      messagesRef.current = updatedMessages;
-      setMessages(updatedMessages);
+      const updatedMessages = normalizeYantraChatMessages(
+        [...nextMessages, assistantMessage(data.reply.trim())],
+        MAX_PERSISTED_CHAT_MESSAGES,
+      );
+      commitMessages(updatedMessages);
     } catch (error) {
       const message =
         error instanceof Error ? error.message : 'Yantra is unavailable right now. Please try again shortly.';
       setError(message);
     } finally {
+      isSendingRef.current = false;
       setIsSending(false);
     }
   }

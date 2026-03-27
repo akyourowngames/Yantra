@@ -172,4 +172,8 @@ Check:
 
 ### Access request succeeds but nothing is stored
 
-That is expected right now. `POST /api/access-requests` validates and logs the request, but it does not persist records yet.
+Check:
+
+- `supabase/schema.sql` has been applied after the `public.access_requests` table was added
+- `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` are set
+- the insert policy for anonymous access requests exists in Supabase

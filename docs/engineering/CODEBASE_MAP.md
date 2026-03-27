@@ -7,10 +7,13 @@ Yantra/
 |-- app/
 |   |-- api/
 |   |   |-- access-requests/route.ts
-|   |   |-- chat/route.ts
+|   |   |-- chat/
+|   |   |   |-- history/route.ts
+|   |   |   `-- route.ts
 |   |   `-- profile/route.ts
 |   |-- auth/
 |   |   |-- confirm/route.ts
+|   |   |-- reset-password/page.tsx
 |   |   `-- signout/route.ts
 |   |-- dashboard/
 |   |   |-- student-profile/page.tsx
@@ -38,6 +41,8 @@ Yantra/
 |   |   `-- motion/ExperienceProvider.tsx
 |   |-- lib/
 |   |   `-- supabase/
+|   |       |-- access-requests.ts
+|   |       |-- chat-history.ts
 |   |       |-- client.ts
 |   |       |-- env.ts
 |   |       |-- profiles.ts
@@ -88,6 +93,8 @@ Shared Supabase integration code:
 - `env.ts` checks and returns required env vars
 - `client.ts` builds the browser client
 - `server.ts` builds the server client
+- `access-requests.ts` validates and inserts public access requests
+- `chat-history.ts` loads and upserts authenticated learner chat history
 - `proxy.ts` refreshes auth cookies for requests
 - `profiles.ts` loads, seeds, and updates learner profile data
 
@@ -102,6 +109,7 @@ Project SQL required for the current profile persistence layer.
 - `app/page.tsx` -> `src/features/marketing/MarketingLandingPage.tsx`
 - `app/login/page.tsx` -> `src/features/auth/AuthExperience.tsx`
 - `app/signup/page.tsx` -> `src/features/auth/AuthExperience.tsx`
+- `app/auth/reset-password/page.tsx` -> `src/features/auth/ResetPasswordExperience.tsx`
 
 ### Protected routes
 
@@ -111,6 +119,7 @@ Project SQL required for the current profile persistence layer.
 ### API routes
 
 - `app/api/chat/route.ts`
+- `app/api/chat/history/route.ts`
 - `app/api/profile/route.ts`
 - `app/api/access-requests/route.ts`
 

@@ -354,13 +354,15 @@ async function seedDashboardData(userId: string) {
 }
 
 function mapDashboardData(data: DashboardQueryResult, profile: StudentDashboardData['profile']): StudentDashboardData {
+  const fallback = starterStudentDashboardSeed;
+
   return {
     profile,
-    path: mapPathRow(data.pathRow as DashboardPathRow),
-    skills: data.skillRows.map(mapSkillRow),
-    curriculumNodes: data.curriculumRows.map(mapCurriculumRow),
-    rooms: data.roomRows.map(mapRoomRow),
-    weeklyActivity: data.weeklyRows.map(mapWeeklyRow),
+    path: data.pathRow ? mapPathRow(data.pathRow) : fallback.path,
+    skills: data.skillRows.length > 0 ? data.skillRows.map(mapSkillRow) : fallback.skills,
+    curriculumNodes: data.curriculumRows.length > 0 ? data.curriculumRows.map(mapCurriculumRow) : fallback.curriculumNodes,
+    rooms: data.roomRows.length > 0 ? data.roomRows.map(mapRoomRow) : fallback.rooms,
+    weeklyActivity: data.weeklyRows.length > 0 ? data.weeklyRows.map(mapWeeklyRow) : fallback.weeklyActivity,
   };
 }
 

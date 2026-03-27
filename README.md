@@ -6,8 +6,9 @@ Yantra is a Next.js 16 prototype for an AI-native learning platform. The current
 - Supabase-backed email/password authentication
 - protected dashboard routes
 - a persisted student profile
+- persisted access requests
+- authenticated chat history continuity
 - a Gemini-powered chat assistant
-- a lightweight access-request submission flow
 
 The app is no longer just a static marketing-plus-dashboard shell. Authentication and profile persistence are live; most learning data, roadmap logic, and room functionality are still demo content.
 
@@ -18,6 +19,7 @@ The app is no longer just a static marketing-plus-dashboard shell. Authenticatio
 - `/` marketing landing page
 - `/login` email/password sign-in
 - `/signup` account creation
+- `/auth/reset-password` password recovery completion
 
 ### Protected pages
 
@@ -32,6 +34,7 @@ The app is no longer just a static marketing-plus-dashboard shell. Authenticatio
 ### API routes
 
 - `/api/chat` Gemini-backed Yantra assistant
+- `/api/chat/history` authenticated chat-history load
 - `/api/profile` authenticated profile read/update
 - `/api/access-requests` access-intent form submission
 
@@ -42,17 +45,17 @@ The app is no longer just a static marketing-plus-dashboard shell. Authenticatio
 - automatic profile seeding in `public.profiles` for first-time signed-in users
 - profile persistence from `/dashboard/student-profile`
 - protected dashboard redirects for signed-out visitors
+- password reset email flow and reset page
 - reusable chat widget on the marketing site and dashboard
-- access-request form validation and server handling
+- authenticated chat history restore across sessions
+- access-request form validation, persistence, and server handling
 
 ## What Is Still Placeholder Or Static
 
 - dashboard skills, progress cards, momentum charts, and room cards
 - curriculum and performance content inside the dashboard UI
-- password recovery
 - Google sign-in
-- access-request storage
-- chat persistence, moderation, analytics, and tool use
+- chat moderation, analytics, and tool use
 - practice-room execution engines and dynamic roadmap logic
 
 ## Project Structure
@@ -104,7 +107,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY="YOUR_SUPABASE_ANON_KEY"
 
 ### Database setup
 
-Run the SQL in `supabase/schema.sql` against your Supabase project. That creates the `public.profiles` table, update trigger, and row-level security policies used by the dashboard profile flow.
+Run the SQL in `supabase/schema.sql` against your Supabase project. That creates `public.profiles`, `public.access_requests`, `public.chat_histories`, plus the update triggers and row-level security policies used by auth, profile persistence, access requests, and authenticated chat continuity.
 
 ### Start
 

@@ -1,3 +1,5 @@
+create extension if not exists pgcrypto;
+
 create table if not exists public.profiles (
   id uuid primary key references auth.users (id) on delete cascade,
   email text,
@@ -50,6 +52,70 @@ for update
 to authenticated
 using ((select auth.uid()) = id)
 with check ((select auth.uid()) = id);
+
+create table if not exists public.access_requests (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  email text not null,
+  message text not null default '',
+  created_at timestamptz not null default timezone('utc', now())
+);
+
+create table if not exists public.chat_histories (
+  user_id uuid primary key references auth.users (id) on delete cascade,
+  messages jsonb not null default '[]'::jsonb,
+  created_at timestamptz not null default timezone('utc', now()),
+  updated_at timestamptz not null default timezone('utc', now())
+);
+
+create or replace function public.set_chat_histories_updated_at()
+returns trigger
+language plpgsql
+as $$
+begin
+  new.updated_at = timezone('utc', now());
+  return new;
+end;
+$$;
+
+drop trigger if exists set_chat_histories_updated_at on public.chat_histories;
+
+create trigger set_chat_histories_updated_at
+before update on public.chat_histories
+for each row
+execute function public.set_chat_histories_updated_at();
+
+alter table public.access_requests enable row level security;
+alter table public.chat_histories enable row level security;
+
+drop policy if exists "Anyone can submit access requests" on public.access_requests;
+create policy "Anyone can submit access requests"
+on public.access_requests
+for insert
+to anon
+with check (true);
+
+drop policy if exists "Users can view their own chat history" on public.chat_histories;
+create policy "Users can view their own chat history"
+on public.chat_histories
+for select
+to authenticated
+using ((select auth.uid()) = user_id);
+
+drop policy if exists "Users can insert their own chat history" on public.chat_histories;
+create policy "Users can insert their own chat history"
+on public.chat_histories
+for insert
+to authenticated
+with check ((select auth.uid()) = user_id);
+
+drop policy if exists "Users can update their own chat history" on public.chat_histories;
+create policy "Users can update their own chat history"
+on public.chat_histories
+for update
+to authenticated
+using ((select auth.uid()) = user_id)
+with check ((select auth.uid()) = user_id);
 
 create table if not exists public.student_dashboard_paths (
   user_id uuid primary key references auth.users (id) on delete cascade,

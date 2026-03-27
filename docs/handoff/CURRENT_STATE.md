@@ -10,7 +10,7 @@ The current codebase is best described as:
 - a real auth and profile foundation
 - a protected dashboard shell
 - a live AI assistant
-- a partially implemented access pipeline
+- a live access pipeline
 
 It is no longer accurate to describe the repo as only a static frontend shell.
 
@@ -21,6 +21,7 @@ It is no longer accurate to describe the repo as only a static frontend shell.
 - `/` marketing landing page
 - `/login` sign-in experience
 - `/signup` sign-up experience
+- `/auth/reset-password` password recovery completion
 
 ### Protected
 
@@ -35,6 +36,7 @@ It is no longer accurate to describe the repo as only a static frontend shell.
 ### API routes
 
 - `POST /api/chat`
+- `GET /api/chat/history`
 - `GET /api/profile`
 - `PUT /api/profile`
 - `POST /api/access-requests`
@@ -48,13 +50,15 @@ It is no longer accurate to describe the repo as only a static frontend shell.
 - automatic first-profile creation in Supabase for signed-in users
 - profile editing and saving from the student profile page
 - Gemini chat requests using `gemini-2.5-flash`
-- access-request submission with request validation and success/error states
+- access-request submission with request validation, persistence, and success/error states
+- password reset email flow and reset page
+- authenticated chat history restore across sessions
 
 ## What Is Real But Limited
 
 ### Access requests
 
-The access-request form is wired end to end from the landing page to `POST /api/access-requests`, but the route only validates and logs the request. It does not persist records yet.
+The access-request form is wired end to end from the landing page to `POST /api/access-requests`, and the route now persists records in Supabase. There is still no internal admissions or partner-review UI in this repo.
 
 ### Dashboard personalization
 
@@ -64,11 +68,13 @@ The dashboard now receives the authenticated learner name and email from the pro
 
 The student profile is real. It is stored in Supabase, seeded on first access, sanitized on write, and exposed through `/api/profile`. Only the profile data model is persisted today, not the rest of the dashboard state.
 
+### Chat continuity
+
+Authenticated learners now resume a single rolling Yantra conversation from Supabase-backed history. Public marketing chat still remains ephemeral.
+
 ## Known Placeholder Areas
 
-- password recovery is a UI placeholder
 - Google sign-in is a UI placeholder
-- chat history is not persisted
 - dashboard skills, rooms, and progression are static
 - teacher, institution, analytics, and certification flows are not built
 
@@ -100,8 +106,8 @@ These are still useful inputs and should not be removed without approval.
 
 ## Best Next Work
 
-- persist access requests instead of only logging them
 - replace dashboard hardcoded content with a typed data contract
-- add persistent chat sessions tied to the authenticated user
-- implement password reset and optional social sign-in
-- add tests around profile APIs and auth redirects
+- add tests around profile APIs, auth redirects, and chat/access-request flows
+- decide whether Google sign-in should remain deferred or become a real OAuth path
+- add internal review tooling for access requests
+- evolve chat from a single rolling thread into richer learner memory and observability

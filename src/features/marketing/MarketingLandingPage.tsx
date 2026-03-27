@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { motion, animate, useInView } from 'motion/react';
 import { ArrowRight, BookOpen, Globe, Menu, Palette, X } from 'lucide-react';
+import { AccessRequestForm } from '@/src/features/access/AccessRequestForm';
 import { ChatProvider, useChatWidget } from '@/src/features/chat/ChatWidget';
 import { useOverlayLock } from '@/src/features/motion/ExperienceProvider';
 import { yantraCtaPrompts } from '@/src/features/chat/yantra-chat';
@@ -479,20 +480,6 @@ function Gallery() {
 
 function Contact() {
   const { openChat } = useChatWidget();
-  const [form, setForm] = useState({
-    name: '',
-    email: '',
-    message: '',
-  });
-
-  const accessMessage = [
-    yantraCtaPrompts.requestAccess,
-    form.name ? `Name: ${form.name}` : null,
-    form.email ? `Email: ${form.email}` : null,
-    form.message ? `Details: ${form.message}` : null,
-  ]
-    .filter(Boolean)
-    .join('\n');
 
   return (
     <section id="contact" className="relative mx-auto max-w-7xl border-t border-white/10 px-6 py-32 scroll-mt-28">
@@ -521,72 +508,25 @@ function Contact() {
               {accessDetails.status}
             </p>
           </div>
+
+          <button
+            type="button"
+            className="hoverable mt-10 inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/[0.04] px-6 py-3 font-mono text-[11px] uppercase tracking-[0.2em] text-white/78 transition-colors hover:bg-white/[0.08]"
+            onClick={() => openChat({ message: yantraCtaPrompts.requestAccess })}
+          >
+            Ask Yantra First <ArrowRight size={14} />
+          </button>
         </motion.div>
 
-        <motion.form
+        <motion.div
           initial={{ x: 50, opacity: 0 }}
           whileInView={{ x: 0, opacity: 1 }}
           viewport={{ once: true, margin: '-100px' }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
           className="flex flex-col gap-8"
-          onSubmit={(event) => {
-            event.preventDefault();
-            openChat({ message: accessMessage });
-          }}
         >
-          <div className="relative">
-            <input
-              type="text"
-              id="name"
-              placeholder=" "
-              value={form.name}
-              onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
-              className="input-field hoverable peer w-full border-b border-border bg-transparent py-3 text-white transition-colors focus:border-accent focus:outline-none"
-            />
-            <label
-              htmlFor="name"
-              className="input-label pointer-events-none absolute left-0 top-3 font-mono text-sm text-muted transition-all duration-300"
-            >
-              Full Name
-            </label>
-          </div>
-          <div className="relative">
-            <input
-              type="email"
-              id="email"
-              placeholder=" "
-              value={form.email}
-              onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))}
-              className="input-field hoverable peer w-full border-b border-border bg-transparent py-3 text-white transition-colors focus:border-accent focus:outline-none"
-            />
-            <label
-              htmlFor="email"
-              className="input-label pointer-events-none absolute left-0 top-3 font-mono text-sm text-muted transition-all duration-300"
-            >
-              Work or Personal Email
-            </label>
-          </div>
-          <div className="relative">
-            <textarea
-              id="message"
-              rows={4}
-              placeholder=" "
-              value={form.message}
-              onChange={(event) => setForm((current) => ({ ...current, message: event.target.value }))}
-              className="input-field hoverable peer w-full resize-none border-b border-border bg-transparent py-3 text-white transition-colors focus:border-accent focus:outline-none"
-            />
-            <label
-              htmlFor="message"
-              className="input-label pointer-events-none absolute left-0 top-3 font-mono text-sm text-muted transition-all duration-300"
-            >
-              Tell us if you are a learner, institution, or hiring partner
-            </label>
-          </div>
-
-          <button className="hoverable mt-4 flex items-center gap-2 self-start rounded-full bg-white px-8 py-4 text-sm font-bold uppercase tracking-widest text-black transition-transform duration-300 hover:scale-105">
-            Request Access <ArrowRight size={16} />
-          </button>
-        </motion.form>
+          <AccessRequestForm className="flex flex-col gap-8" />
+        </motion.div>
       </div>
     </section>
   );

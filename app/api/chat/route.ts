@@ -1,6 +1,14 @@
 import { GoogleGenAI, type Content } from '@google/genai';
 import { NextResponse } from 'next/server';
-import { YANTRA_MODEL, yantraSystemPrompt, type YantraChatMessage } from '@/src/features/chat/yantra-chat';
+import {
+  MAX_MODEL_CHAT_MESSAGES,
+  normalizeYantraChatMessages,
+  YANTRA_MODEL,
+  yantraSystemPrompt,
+  type YantraChatMessage,
+} from '@/src/features/chat/yantra-chat';
+import { hasSupabaseEnv } from '@/src/lib/supabase/env';
+import { upsertAuthenticatedChatHistory } from '@/src/lib/supabase/chat-history';
 
 export const runtime = 'nodejs';
 
@@ -15,23 +23,11 @@ function toGeminiContent(message: YantraChatMessage): Content {
   };
 }
 
-function sanitizeMessages(messages: YantraChatMessage[] = []) {
-  return messages
-    .filter((message) => {
-      const isKnownRole = message.role === 'user' || message.role === 'assistant';
-      return isKnownRole && typeof message.content === 'string' && message.content.trim().length > 0;
-    })
-    .slice(-12)
-    .map((message) => ({
-      role: message.role,
-      content: message.content.trim().slice(0, 4000),
-    }));
-}
-
 export async function POST(request: Request) {
   try {
     const body = (await request.json()) as ChatRequestBody;
-    const messages = sanitizeMessages(body.messages);
+    const fullConversation = normalizeYantraChatMessages(body.messages);
+    const messages = fullConversation.slice(-MAX_MODEL_CHAT_MESSAGES);
 
     if (messages.length === 0) {
       return NextResponse.json({ error: 'A message is required to start the chat.' }, { status: 400 });
@@ -61,6 +57,14 @@ export async function POST(request: Request) {
 
     if (!reply) {
       throw new Error('Yantra returned an empty response.');
+    }
+
+    if (hasSupabaseEnv()) {
+      try {
+        await upsertAuthenticatedChatHistory([...fullConversation, { role: 'assistant', content: reply }]);
+      } catch (error) {
+        console.error('Yantra chat history persistence error:', error);
+      }
     }
 
     return NextResponse.json({ reply });

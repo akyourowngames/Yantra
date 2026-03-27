@@ -45,21 +45,20 @@ The page is wrapped in `ChatProvider`, so CTA buttons can open the shared chat m
 
 The access/contact area uses `src/features/access/AccessRequestForm.tsx`, which submits to `POST /api/access-requests`.
 
-That flow is live, but the backend currently validates and logs requests only. It does not store them yet.
+That flow is live and now persists requests in Supabase.
 
 ## Current Strengths
 
 - strong visual identity and motion language
 - clear conversion paths into signup and chat
-- real access-request submission flow
-- public surface stays usable even when Supabase is not configured
+- real access-request submission flow with persistence
+- public surface still renders cleanly even when Supabase-backed actions are unavailable
 
 ## Current Limitations
 
 - still implemented in one large feature file
 - content is hardcoded
 - no CMS or structured content source
-- no persistence for access requests
 - no deeper marketing routes yet
 
 ## Guidance For Future Work
@@ -67,4 +66,4 @@ That flow is live, but the backend currently validates and logs requests only. I
 - keep the landing page as the public route boundary
 - extract large section blocks into smaller files before the component grows further
 - move static content into typed config objects if copy variants increase
-- persist access requests before expanding the form into a true admissions or partner workflow
+- add an internal admissions or partner-review workflow before expanding the access form further

@@ -10,7 +10,6 @@ import {
   CheckCircle2,
   ChevronRight,
   Grid2x2,
-  HelpCircle,
   LayoutGrid,
   Lock,
   LogOut,
@@ -29,7 +28,7 @@ type NavItem = {
   label: string;
   icon: LucideIcon;
   href?: string;
-  action?: 'overview' | 'roster' | 'curriculum' | 'performance' | 'help';
+  action?: 'overview' | 'roster' | 'curriculum' | 'performance';
   active?: boolean;
 };
 
@@ -49,9 +48,9 @@ type CurriculumItem = {
   state: 'complete' | 'active' | 'locked';
 };
 
-type ActiveSection = 'overview' | 'roster' | 'curriculum' | 'performance' | 'help';
+type ActiveSection = 'overview' | 'roster' | 'curriculum' | 'performance';
 
-type PanelKey = 'notifications' | 'settings' | 'help' | null;
+type PanelKey = 'notifications' | 'settings' | null;
 type StudentProfilePageProps = {
   initialProfileData: StudentProfile;
   defaultProfileData: StudentProfile;
@@ -70,32 +69,8 @@ const sideNavItems: NavItem[] = [
 ];
 
 const supportNavItems: NavItem[] = [
-  { label: 'Help', icon: HelpCircle, action: 'help' },
   { label: 'Logout', icon: LogOut, href: '/auth/signout' },
 ];
-
-const helpFaqs = [
-  {
-    question: 'How do I edit my profile?',
-    answer: 'Open the profile overview card, choose Edit Profile, update your details, and press save. Your latest record syncs to your Yantra account.',
-  },
-  {
-    question: 'What does skill level mean?',
-    answer: 'Skill level is a quick snapshot of your current readiness. It helps the platform show an appropriate learning path and lets mentors understand your current stage.',
-  },
-  {
-    question: 'Does my progress save automatically?',
-    answer: 'Profile edits save when you press the save button. The latest saved version is stored on your Yantra account and follows your session.',
-  },
-  {
-    question: 'Where can I review my curriculum and performance?',
-    answer: 'Use the Curriculum and Performance items in the left sidebar, or open them directly from the Help shortcuts.',
-  },
-  {
-    question: 'How quickly will support respond?',
-    answer: 'For routine profile and curriculum questions, expect a response within one working day. Use email support when the issue needs manual review.',
-  },
-] as const;
 
 const activityCards: ActivityCard[] = [
   {
@@ -149,11 +124,11 @@ const facultyAvatars = [
 ];
 
 const profileSectionClassName =
-  'relative overflow-hidden rounded-[2rem] border border-white/8 bg-white/[0.03] p-8 shadow-[0_20px_54px_rgba(0,0,0,0.22)] backdrop-blur-[22px]';
-const profileInsetCardClassName = 'rounded-[1.75rem] border border-white/8 bg-white/[0.03] p-6';
+  'relative overflow-hidden rounded-[1.5rem] border border-white/8 bg-white/[0.03] p-5 shadow-[0_20px_54px_rgba(0,0,0,0.22)] backdrop-blur-[22px] sm:rounded-[1.75rem] sm:p-6 lg:rounded-[2rem] lg:p-8';
+const profileInsetCardClassName = 'rounded-[1.25rem] border border-white/8 bg-white/[0.03] p-4 sm:rounded-[1.5rem] sm:p-5 lg:rounded-[1.75rem] lg:p-6';
 const profilePanelCardClassName = 'rounded-2xl border border-white/8 bg-white/[0.04] p-4';
 const profileActionButtonClassName =
-  'rounded-full border border-white/12 bg-white/[0.05] px-5 py-3 font-semibold text-white transition-colors hover:bg-white/[0.09] cursor-pointer';
+  'w-full rounded-full border border-white/12 bg-white/[0.05] px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/[0.09] cursor-pointer sm:w-auto sm:px-5';
 
 function PanelShell({
   title,
@@ -167,7 +142,7 @@ function PanelShell({
   onClose: () => void;
 }) {
   return (
-    <section className="fixed right-4 top-24 z-[60] w-[min(24rem,calc(100vw-2rem))] overflow-hidden rounded-[2rem] border border-white/8 bg-black/78 p-6 shadow-[0_26px_60px_rgba(0,0,0,0.42)] backdrop-blur-[24px] md:right-8">
+    <section className="fixed inset-x-4 bottom-4 top-auto z-[60] w-auto overflow-hidden rounded-[1.75rem] border border-white/8 bg-black/78 p-5 shadow-[0_26px_60px_rgba(0,0,0,0.42)] backdrop-blur-[24px] sm:top-24 sm:w-[min(24rem,calc(100vw-2rem))] sm:rounded-[2rem] sm:p-6 md:right-8 md:left-auto">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.08),transparent_30%),linear-gradient(180deg,rgba(255,255,255,0.03),transparent_38%,rgba(255,255,255,0.02))]" />
       <div className="pointer-events-none absolute right-[-16%] top-[-14%] h-32 w-32 rounded-full bg-white/[0.04] blur-[64px]" />
 
@@ -232,14 +207,14 @@ function NavEntry({
 
 function ActivitySection() {
   return (
-    <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+    <div className="grid grid-cols-1 gap-5 md:gap-8 lg:grid-cols-2">
       {activityCards.map((card) => {
         const Icon = card.icon;
 
         return (
           <article
             key={card.title}
-            className={`relative overflow-hidden rounded-[2rem] border p-8 backdrop-blur-[24px] ${
+              className={`relative overflow-hidden rounded-[1.5rem] border p-5 backdrop-blur-[24px] sm:rounded-[1.75rem] sm:p-6 lg:rounded-[2rem] lg:p-8 ${
               card.accent
                 ? 'border-white/10 bg-white/[0.045]'
                 : 'border-white/8 bg-white/[0.035]'
@@ -285,7 +260,7 @@ function CurriculumSection() {
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.09),transparent_30%),linear-gradient(180deg,rgba(255,255,255,0.03),transparent_40%,rgba(255,255,255,0.02))]" />
 
       <div className="relative z-10">
-        <div className="mb-8 flex items-center justify-between gap-4">
+        <div className="mb-6 flex flex-col gap-3 sm:mb-8 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
           <h4 className="font-display text-xl font-semibold tracking-tight text-white">Curriculum Track</h4>
           <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/36">Mastery Path</span>
         </div>
@@ -303,9 +278,9 @@ function CurriculumSection() {
             const progressClassName = item.state === 'complete' ? 'bg-white' : 'bg-white/40';
 
             return (
-              <div key={item.title} className={`flex items-center gap-6 ${item.state === 'locked' ? 'opacity-50' : ''}`}>
+              <div key={item.title} className={`flex items-center gap-4 sm:gap-6 ${item.state === 'locked' ? 'opacity-50' : ''}`}>
                 <div
-                  className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border ${iconContainerClassName}`}
+                  className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-[1rem] border sm:h-12 sm:w-12 sm:rounded-2xl ${iconContainerClassName}`}
                 >
                   <Icon size={20} />
                 </div>
@@ -344,7 +319,7 @@ function RosterSection({
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.08),transparent_32%),linear-gradient(180deg,rgba(255,255,255,0.03),transparent_40%,rgba(255,255,255,0.02))]" />
 
       <div className="relative z-10">
-        <div className="mb-8 flex items-center justify-between gap-4">
+        <div className="mb-6 flex flex-col gap-3 sm:mb-8 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
           <div>
             <h4 className="font-display text-xl font-semibold tracking-tight text-white">Student Roster</h4>
             <p className="mt-2 max-w-lg text-sm leading-relaxed text-white/52">
@@ -355,29 +330,29 @@ function RosterSection({
         </div>
 
         <article className={profileInsetCardClassName}>
-          <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-            <div className="flex items-center gap-4">
-              <div className="flex h-16 w-16 items-center justify-center rounded-[1.25rem] border border-white/12 bg-white/[0.06]">
+          <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="flex h-14 w-14 items-center justify-center rounded-[1rem] border border-white/12 bg-white/[0.06] sm:h-16 sm:w-16 sm:rounded-[1.25rem]">
                 <span className="font-display text-2xl font-bold text-white">{studentInitial}</span>
               </div>
 
               <div>
-                <div className="font-display text-2xl font-semibold text-white">{profile.name}</div>
-                <div className="mt-2 text-sm text-white/52">
+                <div className="font-display text-xl font-semibold text-white sm:text-2xl">{profile.name}</div>
+                <div className="mt-1 text-sm text-white/52 sm:mt-2">
                   {profile.classDesignation} | {profile.skillLevel} | {profile.progress}% complete
                 </div>
               </div>
             </div>
 
-            <div className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-white/68">
+            <div className="self-start rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-white/68 md:self-auto">
               Verified Student
             </div>
           </div>
 
-          <div className="mt-6 flex flex-wrap gap-3">
+          <div className="mt-5 flex flex-col gap-3 sm:mt-6 sm:flex-row sm:flex-wrap">
             <button
               type="button"
-              className="rounded-full bg-white px-5 py-3 font-semibold text-black transition-transform duration-300 hover:scale-[0.98] cursor-pointer"
+              className="w-full rounded-full bg-white px-5 py-3 text-sm font-semibold text-black transition-transform duration-300 hover:scale-[0.98] cursor-pointer sm:w-auto"
               onClick={onOpenProfile}
             >
               Open Profile Overview
@@ -398,7 +373,7 @@ function PerformanceSection() {
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.08),transparent_32%),linear-gradient(180deg,rgba(255,255,255,0.03),transparent_40%,rgba(255,255,255,0.02))]" />
 
       <div className="relative z-10">
-        <div className="mb-8 flex items-center justify-between gap-4">
+        <div className="mb-6 flex flex-col gap-3 sm:mb-8 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
           <div>
             <h4 className="font-display text-xl font-semibold tracking-tight text-white">Performance Insights</h4>
             <p className="mt-2 max-w-lg text-sm leading-relaxed text-white/52">
@@ -492,7 +467,7 @@ export default function StudentProfilePage({
     setActivePanel((current) => (current === panel ? null : panel));
   };
 
-  const focusSection = (sectionId: string, section: Exclude<ActiveSection, 'help'>, message?: string) => {
+  const focusSection = (sectionId: string, section: ActiveSection, message?: string) => {
     setActiveSection(section);
     setActivePanel(null);
     scrollToSection(sectionId);
@@ -529,10 +504,6 @@ export default function StudentProfilePage({
       return;
     }
 
-    if (action === 'help') {
-      setActiveSection('help');
-      handlePanelToggle('help');
-    }
   };
 
   const handleSaveProfile = async (nextProfile: StudentProfile) => {
@@ -554,10 +525,10 @@ export default function StudentProfilePage({
           </Link>
           <Link
             href="/dashboard"
-            className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 font-mono text-[10px] uppercase tracking-[0.18em] text-white/78 transition-colors hover:bg-white/[0.08] cursor-pointer"
+            className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 font-mono text-[10px] uppercase tracking-[0.16em] text-white/78 transition-colors hover:bg-white/[0.08] cursor-pointer sm:px-4 sm:tracking-[0.18em]"
           >
             <Grid2x2 size={14} />
-            Dashboard
+            Back
           </Link>
         </div>
       </header>
@@ -641,128 +612,6 @@ export default function StudentProfilePage({
         </PanelShell>
       )}
 
-      {activePanel === 'help' && (
-        <PanelShell title="Support" eyebrow="Help" onClose={() => setActivePanel(null)}>
-          <div className="relative overflow-hidden rounded-2xl border border-white/8 bg-white/[0.04] p-5">
-            <div className="pointer-events-none absolute right-[-18%] top-[-26%] h-40 w-40 rounded-full bg-white/[0.06] blur-[80px]" />
-
-            <div className="relative z-10">
-              <div className="flex items-start gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-[1.2rem] border border-white/10 bg-white/[0.06]">
-                  <HelpCircle size={20} className="text-white/72" />
-                </div>
-
-                <div>
-                  <div className="font-display text-xl font-semibold text-white">Student Support Desk</div>
-                  <p className="mt-2 text-sm leading-relaxed text-white/58">
-                    Get help with profile updates, curriculum access, progress questions, and record issues without leaving
-                    this page.
-                  </p>
-                </div>
-              </div>
-
-              <div className="mt-5 flex flex-wrap gap-2">
-                {['Profile Edits', 'Curriculum Access', 'Performance Questions'].map((item) => (
-                  <span
-                    key={item}
-                    className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-white/62"
-                  >
-                    {item}
-                  </span>
-                ))}
-              </div>
-
-              <div className="mt-5 grid grid-cols-2 gap-3">
-                <div className="rounded-[1.25rem] border border-white/8 bg-white/[0.03] p-4">
-                  <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/36">Response Time</div>
-                  <div className="mt-2 text-sm text-white">Within one working day</div>
-                </div>
-                <div className="rounded-[1.25rem] border border-white/8 bg-white/[0.03] p-4">
-                  <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/36">Profile Storage</div>
-                  <div className="mt-2 text-sm text-white">Saved to Yantra cloud</div>
-                </div>
-              </div>
-
-              <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <a
-                  href="mailto:support@yantra.ai?subject=Student%20Profile%20Support"
-                  className="rounded-[1.25rem] border border-white/10 bg-white/[0.05] px-4 py-4 transition-colors hover:bg-white/[0.09] cursor-pointer"
-                >
-                  <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/40">Contact</div>
-                  <div className="mt-2 font-display text-lg text-white">Email support</div>
-                  <div className="mt-1 text-sm text-white/50">Reach the support desk for manual help.</div>
-                </a>
-
-                <button
-                  type="button"
-                  className="rounded-[1.25rem] border border-white/10 bg-white/[0.05] px-4 py-4 text-left transition-colors hover:bg-white/[0.09] cursor-pointer"
-                  onClick={() => {
-                    focusSection(CURRICULUM_SECTION_ID, 'curriculum', 'Opened the curriculum section for review.');
-                  }}
-                >
-                  <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/40">Shortcut</div>
-                  <div className="mt-2 font-display text-lg text-white">Review curriculum</div>
-                  <div className="mt-1 text-sm text-white/50">Jump directly to the current mastery track.</div>
-                </button>
-
-                <button
-                  type="button"
-                  className="rounded-[1.25rem] border border-white/10 bg-white/[0.05] px-4 py-4 text-left transition-colors hover:bg-white/[0.09] cursor-pointer"
-                  onClick={() => {
-                    focusSection(PERFORMANCE_SECTION_ID, 'performance', 'Opened performance insights.');
-                  }}
-                >
-                  <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/40">Shortcut</div>
-                  <div className="mt-2 font-display text-lg text-white">Open performance</div>
-                  <div className="mt-1 text-sm text-white/50">Review the latest progress and activity signals.</div>
-                </button>
-
-                <button
-                  type="button"
-                  className="rounded-[1.25rem] border border-white/10 bg-white/[0.05] px-4 py-4 text-left transition-colors hover:bg-white/[0.09] cursor-pointer"
-                  onClick={() => {
-                    focusSection(PROFILE_SECTION_ID, 'overview', 'Returned to profile overview.');
-                  }}
-                >
-                  <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/40">Shortcut</div>
-                  <div className="mt-2 font-display text-lg text-white">Back to profile</div>
-                  <div className="mt-1 text-sm text-white/50">Return to the editable student record card.</div>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-2xl border border-white/8 bg-white/[0.04] p-5">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <div className="font-display text-lg font-medium text-white">FAQs</div>
-                <p className="mt-2 text-sm leading-relaxed text-white/54">
-                  Quick answers to the most common student support questions.
-                </p>
-              </div>
-              <div className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-white/58">
-                {helpFaqs.length} Topics
-              </div>
-            </div>
-
-            <div className="mt-5 space-y-3">
-              {helpFaqs.map((faq) => (
-                <details
-                  key={faq.question}
-                  className="group overflow-hidden rounded-[1.4rem] border border-white/8 bg-white/[0.03] p-4 transition-colors open:bg-white/[0.05]"
-                >
-                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4">
-                    <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/78">{faq.question}</span>
-                    <ChevronRight size={16} className="shrink-0 text-white/38 transition-transform duration-300 group-open:rotate-90 group-open:text-white/72" />
-                  </summary>
-                  <p className="mt-3 border-t border-white/6 pt-3 text-sm leading-relaxed text-white/56">{faq.answer}</p>
-                </details>
-              ))}
-            </div>
-          </div>
-        </PanelShell>
-      )}
-
       <aside className="fixed left-0 top-0 z-30 hidden h-full w-64 flex-col border-r border-white/8 bg-black/62 px-4 pb-8 pt-10 backdrop-blur-2xl lg:flex">
         <div className="mb-12 flex flex-col gap-2 px-2">
           <div className="font-display text-xl font-bold text-white">YANTRA</div>
@@ -792,18 +641,18 @@ export default function StudentProfilePage({
         </div>
       </aside>
 
-      <main className="relative z-10 min-h-screen px-4 pb-16 pt-24 md:px-10 md:pt-28 lg:pl-72 lg:pr-10 lg:pt-10">
+      <main className="relative z-10 min-h-screen px-4 pb-14 pt-24 sm:pb-16 md:px-8 md:pt-28 lg:pl-72 lg:pr-10 lg:pt-10">
         <div className="mx-auto max-w-6xl">
           {statusMessage ? (
-            <div className="mb-6 rounded-full border border-white/10 bg-white/[0.05] px-4 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-white/72 shadow-[0_16px_36px_rgba(0,0,0,0.16)]">
+            <div className="mb-6 rounded-2xl border border-white/10 bg-white/[0.05] px-4 py-3 font-mono text-[10px] uppercase tracking-[0.14em] text-white/72 shadow-[0_16px_36px_rgba(0,0,0,0.16)] sm:rounded-full sm:tracking-[0.18em]">
               {statusMessage}
             </div>
           ) : null}
 
-          <section className="mb-12" id={PROFILE_SECTION_ID}>
-            <div className="flex flex-col gap-8 xl:flex-row xl:items-start xl:justify-between">
+          <section className="mb-10 sm:mb-12" id={PROFILE_SECTION_ID}>
+            <div className="flex flex-col gap-6 sm:gap-8 xl:flex-row xl:items-start xl:justify-between">
               <div className="max-w-3xl">
-                <div className="mb-6 flex flex-wrap items-center gap-2 font-mono text-[10px] uppercase tracking-[0.2em] text-white/40">
+                <div className="mb-4 hidden flex-wrap items-center gap-2 font-mono text-[10px] uppercase tracking-[0.2em] text-white/40 sm:flex sm:mb-6">
                   <Link href="/dashboard" className="cursor-pointer transition-colors hover:text-white/70">
                     Dashboard
                   </Link>
@@ -819,18 +668,18 @@ export default function StudentProfilePage({
                   <span className="text-white/80">{profile.name}</span>
                 </div>
 
-                <div className="mb-5 inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/[0.045] px-5 py-2 backdrop-blur-xl">
+                <div className="mb-4 inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/[0.045] px-4 py-2 backdrop-blur-xl sm:mb-5 sm:px-5">
                   <span className="h-2.5 w-2.5 rounded-full bg-white shadow-[0_0_10px_rgba(255,255,255,0.38)]" />
-                  <span className="font-mono text-[10px] uppercase tracking-[0.28em] text-white/42">Student Identity / Synced Theme</span>
+                  <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-white/42 sm:text-[10px] sm:tracking-[0.28em]">Student Identity / Synced Theme</span>
                 </div>
-                <h1 className="font-display text-5xl font-bold tracking-tight text-white md:text-7xl">Student Profile</h1>
-                <p className="mt-4 max-w-xl text-base font-light leading-relaxed text-white/58">
+                <h1 className="font-display text-4xl font-bold tracking-tight text-white sm:text-5xl md:text-7xl">Student Profile</h1>
+                <p className="mt-3 max-w-xl text-sm font-light leading-relaxed text-white/58 sm:mt-4 sm:text-base">
                   Academic tracking and personal identity management for the Yantra ecosystem. Manage core student data and
                   skill progression from a single institutional view.
                 </p>
               </div>
 
-              <div className="flex flex-wrap items-center gap-3 xl:max-w-md xl:justify-end">
+              <div className="hidden flex-wrap items-center gap-3 sm:flex xl:max-w-md xl:justify-end">
                 <Link
                   href="/dashboard"
                   className="inline-flex items-center gap-3 rounded-full border border-white/12 bg-white/[0.04] px-5 py-3 font-mono text-[11px] uppercase tracking-[0.2em] text-white/78 transition-colors hover:bg-white/[0.08] cursor-pointer"
@@ -862,7 +711,7 @@ export default function StudentProfilePage({
             </div>
           </section>
 
-          <div className="mb-10 flex gap-3 overflow-x-auto pb-2 lg:hidden">
+          <div className="mb-8 hidden gap-3 overflow-x-auto pb-2 sm:flex lg:hidden">
             {sideNavItems.map((item) => (
               <button
                 key={item.label}
@@ -880,10 +729,10 @@ export default function StudentProfilePage({
             ))}
           </div>
 
-          <div className="grid grid-cols-1 gap-12 lg:grid-cols-12">
+          <div className="grid grid-cols-1 gap-8 sm:gap-10 lg:grid-cols-12 lg:gap-12">
             <StudentProfileCard ref={profileCardRef} profile={profile} onSave={handleSaveProfile} />
 
-            <section className="flex flex-col gap-8 lg:col-span-7">
+            <section className="flex flex-col gap-6 sm:gap-8 lg:col-span-7">
               <div id={ROSTER_SECTION_ID}>
                 <RosterSection
                   profile={profile}

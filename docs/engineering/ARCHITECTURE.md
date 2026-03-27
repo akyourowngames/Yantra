@@ -26,12 +26,13 @@
 
 ### Authentication
 
-- Routes: `/login`, `/signup`, `/auth/confirm`, `/auth/signout`
+- Routes: `/login`, `/signup`, `/auth/confirm`, `/auth/reset-password`, `/auth/signout`
 - Main implementation: `src/features/auth/AuthExperience.tsx`
 - Responsibilities:
   - email/password sign-in
   - email/password sign-up
   - email verification redirect handling
+  - password recovery and password update
   - sign-out
   - redirecting authenticated users away from auth pages
 
@@ -61,12 +62,14 @@
 - `POST /api/chat`
   - validates and sanitizes recent chat messages
   - calls Gemini with the Yantra system prompt
+- `GET /api/chat/history`
+  - returns the authenticated learner's latest persisted conversation
 - `GET /api/profile`
   - returns the authenticated learner profile and seeded defaults
 - `PUT /api/profile`
   - validates profile input and upserts the authenticated learner profile
 - `POST /api/access-requests`
-  - validates name/email/message and currently logs the request
+  - validates name/email/message and persists the request
 
 ## Auth And Session Boundary
 
@@ -87,6 +90,8 @@ Protected routes do not rely on client-only checks. `app/dashboard/page.tsx` and
 
 - Supabase auth users
 - `public.profiles`
+- `public.access_requests`
+- `public.chat_histories`
 
 ### `public.profiles` fields
 
@@ -119,6 +124,14 @@ The profile model is defined in the app as `StudentProfile` in `src/features/das
 3. Supabase sends the confirmation email when email confirmation is enabled.
 4. `/auth/confirm` verifies the OTP and redirects into the app.
 
+### Password reset flow
+
+1. User opens `/login` and enters an email address.
+2. `AuthExperience` calls `resetPasswordForEmail()` with `redirectTo=/auth/reset-password`.
+3. Supabase redirects the recovery link into `/auth/reset-password`.
+4. `ResetPasswordExperience` updates the password through `updateUser({ password })`.
+5. The temporary recovery session is signed out and the learner is redirected to `/login`.
+
 ### Dashboard/profile load flow
 
 1. A protected route checks `hasSupabaseEnv()`.
@@ -137,10 +150,11 @@ The profile model is defined in the app as `StudentProfile` in `src/features/das
 ### Chat flow
 
 1. Marketing and dashboard pages wrap their UI in `ChatProvider`.
-2. The client stores transient conversation state in memory only.
-3. The provider sends the most recent sanitized conversation to `/api/chat`.
-4. The route truncates and maps messages into Gemini content objects.
-5. Gemini responds using `gemini-2.5-flash` and the shared Yantra prompt.
+2. On first open, the provider tries to load `/api/chat/history`.
+3. Authenticated learners receive their last persisted conversation; public users keep the in-memory welcome state.
+4. The provider sends the most recent sanitized conversation to `/api/chat`.
+5. The route truncates model input to the last 12 messages, calls Gemini, and persists the updated rolling history for authenticated learners.
+6. Gemini responds using `gemini-2.5-flash` and the shared Yantra prompt.
 
 ## State Boundaries
 
@@ -148,10 +162,11 @@ The profile model is defined in the app as `StudentProfile` in `src/features/das
 
 - auth session
 - student profile row
+- access-request rows
+- authenticated chat history
 
 ### Client-only
 
-- chat history
 - dashboard section state
 - mobile nav and panel open states
 - access-request form status
@@ -166,10 +181,9 @@ The profile model is defined in the app as `StudentProfile` in `src/features/das
 
 ## Current Constraints
 
-- there is no persistent chat memory
 - dashboard metrics are largely presentation data
-- access requests are not stored yet
-- password reset and Google sign-in are placeholders
+- Google sign-in is still a placeholder
+- chat continuity is limited to one rolling authenticated conversation
 - there is no test suite or monitoring layer
 
 ## Recommended Evolution
@@ -178,4 +192,4 @@ The profile model is defined in the app as `StudentProfile` in `src/features/das
 - keep surface-specific UI in `src/features/`
 - keep Supabase integration inside `src/lib/supabase/`
 - keep the current auth/profile foundation and extend from it instead of adding a second identity layer
-- persist access requests and chat sessions before expanding the surface area further
+- add richer dashboard persistence, chat observability, and access-request review tooling before expanding the surface area further

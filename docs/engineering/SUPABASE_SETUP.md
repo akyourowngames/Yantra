@@ -6,6 +6,8 @@ Yantra uses Supabase for:
 - SSR session handling
 - protected dashboard access
 - persisted learner profiles in `public.profiles`
+- persisted public access requests in `public.access_requests`
+- authenticated chat continuity in `public.chat_histories`
 
 ## Required Environment Variables
 
@@ -28,9 +30,15 @@ Run:
 That script creates:
 
 - `public.profiles`
+- `public.access_requests`
+- `public.chat_histories`
 - the `set_profiles_updated_at()` trigger function
 - the `set_profiles_updated_at` trigger
+- the `set_chat_histories_updated_at()` trigger function
+- the `set_chat_histories_updated_at` trigger
 - row-level security policies so authenticated users can only view and update their own profile row
+- row-level security policies so authenticated users can only read and update their own chat history
+- row-level security policies so anonymous visitors can submit access requests
 
 ## Current Profile Schema
 
@@ -79,7 +87,9 @@ Inside Supabase Auth settings:
 ### Redirect URLs
 
 - `http://localhost:3000/auth/confirm`
+- `http://localhost:3000/auth/reset-password`
 - `https://YOUR-PRODUCTION-DOMAIN/auth/confirm`
+- `https://YOUR-PRODUCTION-DOMAIN/auth/reset-password`
 
 ## What The App Does With Supabase
 
@@ -93,6 +103,13 @@ Inside Supabase Auth settings:
 
 - signs in with `signInWithPassword()`
 - redirects authenticated users to `/dashboard`
+- triggers `resetPasswordForEmail()` from the forgot-password action
+
+### `/auth/reset-password`
+
+- completes the password-recovery flow
+- updates the current user password through `updateUser({ password })`
+- signs the recovery session out and redirects back to `/login`
 
 ### `/dashboard`
 
@@ -109,6 +126,16 @@ Inside Supabase Auth settings:
 
 - `GET` returns the authenticated learner profile plus a default profile shape
 - `PUT` validates and upserts the learner profile row
+
+### `/api/access-requests`
+
+- validates name, email, and message
+- inserts a row into `public.access_requests`
+
+### `/api/chat/history`
+
+- returns the authenticated learner's persisted conversation history
+- falls back to empty history when no row exists yet
 
 ## First-Time Profile Behavior
 
@@ -134,12 +161,13 @@ The row is sanitized before insert and update.
 8. Open `/dashboard`.
 9. Open `/dashboard/student-profile`, edit the record, and save it.
 10. Reload and confirm the updated profile persisted.
+11. Open `/login`, request a password reset, and verify the recovery page lets you set a new password.
+12. Open the chat as an authenticated learner, send a message, reload, and confirm the conversation resumes.
 
 ## Known Gaps
 
-- password reset is not wired yet
 - Google sign-in is not wired yet
-- only the student profile is persisted; dashboard metrics and chat sessions are not
+- dashboard metrics and most learning-state models are still demo content
 
 ## Production Checklist
 
@@ -148,4 +176,4 @@ The row is sanitized before insert and update.
 3. Add `GEMINI_API_KEY` in Vercel.
 4. Apply `supabase/schema.sql` to the production Supabase project.
 5. Update Supabase Site URL to the production domain.
-6. Add the production `/auth/confirm` URL to Redirect URLs.
+6. Add the production `/auth/confirm` and `/auth/reset-password` URLs to Redirect URLs.

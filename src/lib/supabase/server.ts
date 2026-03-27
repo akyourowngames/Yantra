@@ -1,3 +1,4 @@
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { getSupabaseEnv } from './env';
@@ -21,6 +22,17 @@ export async function createClient() {
           // The auth proxy refreshes cookies for those request flows.
         }
       },
+    },
+  });
+}
+
+export function createAnonClient() {
+  const { supabaseUrl, supabaseAnonKey } = getSupabaseEnv();
+
+  return createSupabaseClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
     },
   });
 }
