@@ -302,7 +302,14 @@ export default function RoleOnboardingExperience({
       });
 
       const payload = (await response.json()) as { error?: string; profile?: StudentProfile };
-      if (!response.ok || !payload.profile) throw new Error(payload.error || 'Yantra could not save your onboarding answers right now.');
+      if (!response.ok || !payload.profile) {
+        if (response.status === 401) {
+          window.location.href = '/login?message=Your%20session%20expired.%20Please%20log%20in%20again.&kind=error';
+          return;
+        }
+
+        throw new Error(payload.error || 'Yantra could not save your onboarding answers right now.');
+      }
 
       setStatus({ kind: 'success', message: 'Roadmap settings saved. Opening your dashboard...' });
       startPageTransition();
