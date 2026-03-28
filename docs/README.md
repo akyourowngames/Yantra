@@ -37,6 +37,11 @@ Use it to understand what is actually implemented now, what is still placeholder
 - `product/OPEN_WORK.md`
   Concrete unfinished product and engineering work.
 
+### Schemas
+
+- `schemas/YANTRA_ROOM_SCHEMA.md`
+  Shared room schema for Yantra practice rooms, including field extensions and an example room object.
+
 ### Handoff
 
 - `handoff/CURRENT_STATE.md`

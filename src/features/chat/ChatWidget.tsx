@@ -37,6 +37,7 @@ type ChatWidgetContextValue = {
 type ChatPanelProps = {
   isOpen: boolean;
   isSending: boolean;
+  showLauncher: boolean;
   input: string;
   error: string | null;
   messages: YantraChatMessage[];
@@ -61,6 +62,7 @@ function buildDefaultMessages() {
 function ChatPanel({
   isOpen,
   isSending,
+  showLauncher,
   input,
   error,
   messages,
@@ -257,7 +259,7 @@ function ChatPanel({
         )}
       </AnimatePresence>
 
-      {!isOpen && (
+      {!isOpen && showLauncher && (
         <motion.button
           type="button"
           className="fixed bottom-[calc(env(safe-area-inset-bottom)+1rem)] right-4 z-[70] flex min-h-11 items-center gap-3 rounded-full border border-white/10 bg-black/80 px-4 py-3 text-white shadow-[0_18px_60px_rgba(0,0,0,0.45)] backdrop-blur-xl hoverable sm:px-5 md:bottom-6 md:right-6"
@@ -279,7 +281,13 @@ function ChatPanel({
   );
 }
 
-export function ChatProvider({ children }: { children: ReactNode }) {
+export function ChatProvider({
+  children,
+  showLauncher = true,
+}: {
+  children: ReactNode;
+  showLauncher?: boolean;
+}) {
   const [isOpen, setIsOpen] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [input, setInput] = useState('');
@@ -465,6 +473,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       <ChatPanel
         isOpen={isOpen}
         isSending={isSending}
+        showLauncher={showLauncher}
         input={input}
         error={error}
         messages={messages}

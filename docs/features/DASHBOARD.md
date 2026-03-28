@@ -3,15 +3,18 @@
 ## Routes And Ownership
 
 - `/dashboard`
+- `/dashboard/rooms/[slug]`
 - `/dashboard/student-profile`
 - Dashboard entry: `app/dashboard/page.tsx`
+- Room entry: `app/dashboard/rooms/[slug]/page.tsx`
 - Dashboard implementation: `src/features/dashboard/StudentDashboard.tsx`
+- Room implementation: `src/features/rooms/RoomExperience.tsx`
 - Student profile entry: `app/dashboard/student-profile/page.tsx`
 - Student profile implementation: `src/features/dashboard/StudentProfilePage.tsx`
 
 ## Route Protection
 
-Both routes are protected server-side.
+All dashboard routes are protected server-side.
 
 Each route:
 
@@ -46,9 +49,42 @@ These values come from the authenticated Supabase profile flow.
 
 ### Embedded behavior
 
-- chat entry points open the shared Yantra chat modal
+- dashboard room cards now link into dedicated room routes
+- chat entry points still open the shared Yantra chat modal
 - navigation links into `/dashboard/student-profile`
 - the visual surface is polished, but it is still largely presentation data
+
+## `/dashboard/rooms/[slug]`
+
+### Purpose
+
+This is the first dedicated room surface inside the product. It turns the previous room-card concept into an actual protected learning environment with:
+
+- a structured instruction panel
+- a central workspace surface
+- an embedded AI mentor side rail
+- room progress controls
+
+### What is dynamic today
+
+- route selection by room slug
+- authenticated learner identity in the room shell
+- room content chosen from a typed local schema
+- AI mentor entry points opening the real shared chat system
+
+### What is still static today
+
+- room progress persistence
+- code execution
+- room evaluation engine
+- adaptive unlock logic
+- saved room outcomes
+
+### Supporting files
+
+- `src/features/rooms/room-schema.ts`
+- `src/features/rooms/room-content.ts`
+- `src/features/rooms/RoomExperience.tsx`
 
 ## `/dashboard/student-profile`
 
@@ -91,7 +127,7 @@ Only the profile record is persisted. The surrounding curriculum, roster, and pe
 
 ## Current Limitations
 
-- no dynamic room engine
+- no persisted room engine yet
 - no dynamic curriculum model
 - no real unlock logic
 - no analytics or event tracking

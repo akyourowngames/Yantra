@@ -27,6 +27,7 @@ import { motion, useInView } from 'motion/react';
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { ChatProvider, useChatWidget } from '@/src/features/chat/ChatWidget';
 import { useOverlayLock } from '@/src/features/motion/ExperienceProvider';
+import { buildRoomHref } from '@/src/features/rooms/room-content';
 import {
   type DashboardRoomTextureKey,
   type DashboardSkillIconKey,
@@ -1116,7 +1117,6 @@ function SkillCard({ skill, index }: { skill: StudentDashboardSkill; index: numb
 
 function RoomsSection() {
   const { rooms } = useDashboardData();
-  const { openChat } = useChatWidget();
 
   return (
     <SectionShell
@@ -1163,15 +1163,14 @@ function RoomsSection() {
               </div>
 
               <div className="mt-10 flex items-center justify-between gap-4">
-                <button
-                  type="button"
+                <Link
+                  href={buildRoomHref(room.roomKey)}
                   className={`rounded-full px-6 py-3 text-sm uppercase tracking-[0.18em] transition-colors hoverable ${
                     room.featured ? 'bg-white text-black hover:bg-white/92' : 'border border-white/12 bg-white/[0.05] text-white hover:bg-white/[0.08]'
                   }`}
-                  onClick={() => openChat({ message: room.prompt })}
                 >
                   {room.ctaLabel}
-                </button>
+                </Link>
 
                 <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.22em] text-white/40">
                   <span>AI-guided</span>

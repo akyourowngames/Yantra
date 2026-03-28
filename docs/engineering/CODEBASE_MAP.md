@@ -16,6 +16,8 @@ Yantra/
 |   |   |-- reset-password/page.tsx
 |   |   `-- signout/route.ts
 |   |-- dashboard/
+|   |   |-- rooms/
+|   |   |   `-- [slug]/page.tsx
 |   |   |-- student-profile/page.tsx
 |   |   `-- page.tsx
 |   |-- login/page.tsx
@@ -37,6 +39,10 @@ Yantra/
 |   |   |   |-- StudentProfilePage.tsx
 |   |   |   |-- student-profile-model.ts
 |   |   |   `-- YantraAmbientBackground.tsx
+|   |   |-- rooms/
+|   |   |   |-- RoomExperience.tsx
+|   |   |   |-- room-content.ts
+|   |   |   `-- room-schema.ts
 |   |   |-- marketing/MarketingLandingPage.tsx
 |   |   `-- motion/ExperienceProvider.tsx
 |   |-- lib/
@@ -78,6 +84,10 @@ The chat widget, prompt/config helpers, and rich message rendering.
 
 The protected dashboard and student-profile UI, plus the local student profile model helpers.
 
+### `src/features/rooms/`
+
+The typed room schema, seeded room content, and the protected room experience UI.
+
 ### `src/features/marketing/`
 
 The public landing page implementation. This is still a large single feature file.
@@ -114,6 +124,7 @@ Project SQL required for the current profile persistence layer.
 ### Protected routes
 
 - `app/dashboard/page.tsx` -> `src/features/dashboard/StudentDashboard.tsx`
+- `app/dashboard/rooms/[slug]/page.tsx` -> `src/features/rooms/RoomExperience.tsx`
 - `app/dashboard/student-profile/page.tsx` -> `src/features/dashboard/StudentProfilePage.tsx`
 
 ### API routes
