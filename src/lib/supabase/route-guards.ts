@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { redirect } from 'next/navigation';
 import { isOnboardingComplete } from '@/src/features/dashboard/student-profile-model';
 import { hasSupabaseEnv } from './env';
@@ -12,6 +13,8 @@ type RequireAuthenticatedProfileOptions = {
   supabaseRedirect?: string;
 };
 
+const getCachedAuthenticatedProfile = cache(getAuthenticatedProfile);
+
 export function requireSupabaseConfigured(
   redirectTo = '/login?message=Configure%20Supabase%20first.&kind=error',
 ) {
@@ -25,7 +28,7 @@ export async function redirectAuthenticatedUserToApp() {
     return null;
   }
 
-  const result = await getAuthenticatedProfile();
+  const result = await getCachedAuthenticatedProfile();
 
   if (result) {
     redirect('/dashboard');
@@ -42,7 +45,7 @@ export async function requireAuthenticatedProfile({
 }: RequireAuthenticatedProfileOptions): Promise<AuthenticatedProfileResult> {
   requireSupabaseConfigured(supabaseRedirect);
 
-  const result = await getAuthenticatedProfile();
+  const result = await getCachedAuthenticatedProfile();
 
   if (!result) {
     redirect(unauthenticatedRedirect);

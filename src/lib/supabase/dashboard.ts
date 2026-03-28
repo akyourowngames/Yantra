@@ -97,6 +97,8 @@ type DashboardQueryResult = {
   weeklyRows: DashboardWeeklyActivityRow[];
 };
 
+type AuthenticatedProfileResult = NonNullable<Awaited<ReturnType<typeof getAuthenticatedProfile>>>;
+
 function getErrorCode(error: unknown) {
   if (!error || typeof error !== 'object' || !('code' in error)) {
     return '';
@@ -377,18 +379,18 @@ function mapDashboardData(data: DashboardQueryResult, profile: StudentDashboardD
   };
 }
 
-export async function getAuthenticatedDashboardData() {
-  const profileResult = await getAuthenticatedProfile();
+export async function getAuthenticatedDashboardData(profileResult?: AuthenticatedProfileResult | null) {
+  const resolvedProfileResult = profileResult ?? (await getAuthenticatedProfile());
 
-  if (!profileResult) {
+  if (!resolvedProfileResult) {
     return null;
   }
 
-  const email = profileResult.user.email ?? '';
-  const fallback = buildStarterStudentDashboard(profileResult.profile, email);
+  const email = resolvedProfileResult.user.email ?? '';
+  const fallback = buildStarterStudentDashboard(resolvedProfileResult.profile, email);
   const profile = fallback.profile;
 
-  const initialLoad = await loadDashboardRows(profileResult.user.id);
+  const initialLoad = await loadDashboardRows(resolvedProfileResult.user.id);
 
   if (initialLoad.error) {
     if (isRecoverableDashboardError(initialLoad.error)) {
@@ -401,13 +403,13 @@ export async function getAuthenticatedDashboardData() {
   let dashboardRows = initialLoad.data;
 
   if (isDashboardSeedMissing(dashboardRows)) {
-    const seeded = await seedDashboardData(profileResult.user.id);
+    const seeded = await seedDashboardData(resolvedProfileResult.user.id);
 
     if (!seeded) {
       return fallback;
     }
 
-    const reloaded = await loadDashboardRows(profileResult.user.id);
+    const reloaded = await loadDashboardRows(resolvedProfileResult.user.id);
 
     if (reloaded.error) {
       if (isRecoverableDashboardError(reloaded.error)) {

@@ -38,6 +38,9 @@ type LegacyProfileRow = Omit<
   'user_role' | 'age_range' | 'primary_learning_goals' | 'learning_pace' | 'onboarding_completed' | 'onboarding_completed_at'
 >;
 
+let onboardingSchemaSupportPromise: Promise<boolean> | null = null;
+let enhancedOnboardingSchemaSupportPromise: Promise<boolean> | null = null;
+
 function deriveFullName(user: User) {
   const metadataName =
     typeof user.user_metadata?.full_name === 'string'
@@ -285,6 +288,34 @@ async function supportsEnhancedOnboardingProfileSchema(supabase: Awaited<ReturnT
   throw error;
 }
 
+async function getOnboardingSchemaSupport(supabase: Awaited<ReturnType<typeof createClient>>) {
+  if (!onboardingSchemaSupportPromise) {
+    onboardingSchemaSupportPromise = supportsOnboardingProfileSchema(supabase).catch((error) => {
+      onboardingSchemaSupportPromise = null;
+      throw error;
+    });
+  }
+
+  return onboardingSchemaSupportPromise;
+}
+
+async function getEnhancedOnboardingSchemaSupport(supabase: Awaited<ReturnType<typeof createClient>>) {
+  const supportsOnboardingSchema = await getOnboardingSchemaSupport(supabase);
+
+  if (!supportsOnboardingSchema) {
+    return false;
+  }
+
+  if (!enhancedOnboardingSchemaSupportPromise) {
+    enhancedOnboardingSchemaSupportPromise = supportsEnhancedOnboardingProfileSchema(supabase).catch((error) => {
+      enhancedOnboardingSchemaSupportPromise = null;
+      throw error;
+    });
+  }
+
+  return enhancedOnboardingSchemaSupportPromise;
+}
+
 export async function getAuthenticatedUser() {
   const supabase = await createClient();
   const {
@@ -314,10 +345,8 @@ export async function getAuthenticatedProfile() {
   const defaultProfile = buildDefaultStudentProfile(user);
 
   try {
-    const supportsOnboardingSchema = await supportsOnboardingProfileSchema(supabase);
-    const supportsEnhancedOnboardingSchema = supportsOnboardingSchema
-      ? await supportsEnhancedOnboardingProfileSchema(supabase)
-      : false;
+    const supportsOnboardingSchema = await getOnboardingSchemaSupport(supabase);
+    const supportsEnhancedOnboardingSchema = await getEnhancedOnboardingSchemaSupport(supabase);
 
     const { data, error } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle();
 
@@ -389,10 +418,8 @@ export async function updateAuthenticatedProfile(profile: StudentProfile) {
   }
 
   const supabase = await createClient();
-  const supportsOnboardingSchema = await supportsOnboardingProfileSchema(supabase);
-  const supportsEnhancedOnboardingSchema = supportsOnboardingSchema
-    ? await supportsEnhancedOnboardingProfileSchema(supabase)
-    : false;
+  const supportsOnboardingSchema = await getOnboardingSchemaSupport(supabase);
+  const supportsEnhancedOnboardingSchema = await getEnhancedOnboardingSchemaSupport(supabase);
   const { data, error } = supportsEnhancedOnboardingSchema
     ? await supabase
         .from('profiles')
