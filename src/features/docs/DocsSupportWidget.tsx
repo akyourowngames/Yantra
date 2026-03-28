@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { ArrowUpRight, Expand, LifeBuoy, Minimize2, SendHorizontal, ShieldQuestion, X } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react';
-import ChatMessageContent from '@/src/features/chat/ChatMessageContent';
+import DeferredChatMessageContent from '@/src/features/chat/DeferredChatMessageContent';
 import { useOverlayLock } from '@/src/features/motion/ExperienceProvider';
 import { getDocsArticleHref } from './docs-content';
 import {
@@ -214,7 +214,7 @@ export default function DocsSupportWidget({ activeSlug = null }: DocsSupportWidg
                             : 'rounded-[1.8rem] rounded-bl-md border border-white/10 bg-white/[0.04] px-4 py-3.5 text-[15px] leading-relaxed text-white md:px-5 md:py-4'
                         }
                       >
-                        <ChatMessageContent content={message.content} variant={message.role === 'user' ? 'user' : 'assistant'} />
+                        <DeferredChatMessageContent content={message.content} variant={message.role === 'user' ? 'user' : 'assistant'} />
                       </div>
                     </div>
                   ))}

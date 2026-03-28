@@ -1,5 +1,6 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { AnimatePresence, motion } from 'motion/react';
 import {
@@ -16,8 +17,11 @@ import {
 } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 import { useOverlayLock } from '@/src/features/motion/ExperienceProvider';
-import DocsSupportWidget from './DocsSupportWidget';
 import { docsGroups, getDocsArticleBySlug, getDocsArticleHref, getDocsArticlesByGroup, type DocsGroupId } from './docs-content';
+
+const DocsSupportWidget = dynamic(() => import('./DocsSupportWidget'), {
+  loading: () => null,
+});
 
 type DocsShellProps = {
   children: ReactNode;

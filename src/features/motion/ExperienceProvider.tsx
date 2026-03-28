@@ -383,11 +383,15 @@ export function ExperienceProvider({ children }: { children: ReactNode }) {
 
     lenisRef.current = lenis;
 
+    if (isOverlayActive) {
+      lenis.stop();
+    }
+
     return () => {
       lenis.destroy();
       lenisRef.current = null;
     };
-  }, [reducedMotion]);
+  }, [isOverlayActive, reducedMotion]);
 
   useEffect(() => {
     if (!lenisRef.current) {

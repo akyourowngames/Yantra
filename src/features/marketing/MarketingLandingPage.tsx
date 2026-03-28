@@ -1,10 +1,10 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { motion, animate, useInView } from 'motion/react';
 import { ArrowRight, BookOpen, Globe, Menu, Palette, X } from 'lucide-react';
-import { AccessRequestForm } from '@/src/features/access/AccessRequestForm';
 import { ChatProvider, useChatWidget } from '@/src/features/chat/ChatWidget';
 import { useOverlayLock } from '@/src/features/motion/ExperienceProvider';
 import { yantraCtaPrompts } from '@/src/features/chat/yantra-chat';
@@ -15,6 +15,23 @@ import {
   marketingNavLinks,
   marketingTickerItems,
 } from './marketing-content';
+
+const AccessRequestForm = dynamic(
+  () => import('@/src/features/access/AccessRequestForm').then((module) => module.AccessRequestForm),
+  {
+    loading: () => (
+      <div className="rounded-[2rem] border border-white/10 bg-white/[0.03] p-6 backdrop-blur-md">
+        <div className="h-6 w-32 animate-pulse rounded bg-white/10" />
+        <div className="mt-6 space-y-4">
+          <div className="h-12 animate-pulse rounded bg-white/8" />
+          <div className="h-12 animate-pulse rounded bg-white/8" />
+          <div className="h-28 animate-pulse rounded bg-white/8" />
+          <div className="h-12 w-40 animate-pulse rounded-full bg-white/12" />
+        </div>
+      </div>
+    ),
+  },
+);
 
 function FluidBackground() {
   return (
