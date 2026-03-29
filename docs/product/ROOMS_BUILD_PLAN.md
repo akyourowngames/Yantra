@@ -167,7 +167,8 @@ The priority is depth over breadth.
 - This plan is saved as the active reference.
 - The dedicated room runtime was removed earlier.
 - The dashboard still contains mock room UI cards.
-- Day 1 shell is now the active implementation target at `/dashboard/rooms/python`.
+- Day 1 shell is implemented at `/dashboard/rooms/python`.
+- Day 2 browser execution is implemented with Pyodide inside the same room.
 - Dashboard integration is still deferred until Day 6.
 
-When room work restarts, begin with Day 1 from this file.
+When room work continues, begin with Day 3 from this file.

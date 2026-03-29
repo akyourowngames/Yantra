@@ -3,8 +3,9 @@
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { ArrowLeft, Bot, CirclePlay, Clock3, FileCode2, FlaskConical, Sparkles } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import YantraMobileMenu from '@/src/features/navigation/YantraMobileMenu';
+import { runPythonInBrowser, warmPyodideRuntime } from './pyodide-runtime';
 import { pythonRoomDayOneContent } from './python-room-content';
 
 const MonacoEditor = dynamic(() => import('@monaco-editor/react').then((module) => module.default), {
@@ -49,12 +50,45 @@ function PythonRoomAmbientBackground() {
 
 export default function PythonRoomShell() {
   const [code, setCode] = useState(pythonRoomDayOneContent.starterCode);
-  const [hasRunPreview, setHasRunPreview] = useState(false);
   const [useDesktopEditor, setUseDesktopEditor] = useState(false);
+  const [runtimeState, setRuntimeState] = useState<'warming' | 'idle' | 'running' | 'success' | 'error'>('warming');
+  const [output, setOutput] = useState('Python runtime is warming up in the background. Your first run may take a few seconds.');
+  const mobileEditorRef = useRef<HTMLTextAreaElement | null>(null);
 
   const outputLabel = useMemo(
-    () => (hasRunPreview ? 'Preview Output' : 'Output panel is waiting for your first run.'),
-    [hasRunPreview],
+    () =>
+      ({
+        warming: 'Python runtime is loading in the browser for the first time.',
+        idle: 'Output panel is ready for your first real run.',
+        running: 'Executing Python in the browser now.',
+        success: 'Real Python output from the current run.',
+        error: 'Python raised an error for this run.',
+      })[runtimeState],
+    [runtimeState],
+  );
+
+  const outputBadgeLabel = useMemo(
+    () =>
+      ({
+        warming: 'Loading runtime',
+        idle: 'Ready',
+        running: 'Running',
+        success: 'Executed',
+        error: 'Error',
+      })[runtimeState],
+    [runtimeState],
+  );
+
+  const outputBadgeClassName = useMemo(
+    () =>
+      ({
+        warming: 'text-white/58',
+        idle: 'text-white/58',
+        running: 'text-white',
+        success: 'text-emerald-200',
+        error: 'text-rose-200',
+      })[runtimeState],
+    [runtimeState],
   );
 
   useEffect(() => {
@@ -72,6 +106,48 @@ export default function PythonRoomShell() {
       media.removeEventListener('change', updateEditorMode);
     };
   }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    void warmPyodideRuntime().then((isReady) => {
+      if (!isMounted) {
+        return;
+      }
+
+      if (isReady) {
+        setRuntimeState((current) => (current === 'warming' ? 'idle' : current));
+        return;
+      }
+
+      setRuntimeState((current) => (current === 'warming' ? 'error' : current));
+      setOutput('Python runtime failed to initialize. Check your connection and try running the room again.');
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (useDesktopEditor || !mobileEditorRef.current) {
+      return;
+    }
+
+    const textarea = mobileEditorRef.current;
+    textarea.style.height = '0px';
+    textarea.style.height = `${Math.max(textarea.scrollHeight, 320)}px`;
+  }, [code, useDesktopEditor]);
+
+  const handleRun = async () => {
+    setRuntimeState('running');
+    setOutput('Executing your Python code in-browser...');
+
+    const result = await runPythonInBrowser(code);
+
+    setRuntimeState(result.status);
+    setOutput(result.output);
+  };
 
   return (
     <div className="min-h-[100svh] bg-black text-white selection:bg-white selection:text-black sm:min-h-screen">
@@ -222,8 +298,8 @@ export default function PythonRoomShell() {
                 <section className="mt-5 rounded-[1.75rem] border border-white/8 bg-black/24 p-5">
                   <div className="font-mono text-[10px] uppercase tracking-[0.26em] text-white/38">Starter guidance</div>
                   <p className="mt-4 text-sm leading-relaxed text-white/60">
-                    Keep the output to one line per learner. Use one clean loop and one conditional branch block. Day 1 is layout only,
-                    so the output area below is simulated until Pyodide arrives.
+                    Keep the output to one line per learner. Use one clean loop and one conditional branch block. Day 2 now runs real
+                    Python in the browser, so the output panel reflects your actual code.
                   </p>
                 </section>
               </div>
@@ -240,11 +316,16 @@ export default function PythonRoomShell() {
                   </div>
                 </div>
 
-                <div className="font-mono text-[10px] uppercase tracking-[0.24em] text-white/42">Monaco preview loaded on client</div>
+                <div className="font-mono text-[10px] uppercase tracking-[0.24em] text-white/42">
+                  {useDesktopEditor ? 'Monaco editor ready on client' : 'Mobile editor ready'}
+                </div>
               </div>
 
               <div className="p-3 sm:p-4">
-                <div className="overflow-hidden rounded-[1.5rem] border border-white/8 bg-[#111111] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+                <div
+                  data-lenis-prevent={useDesktopEditor ? 'true' : undefined}
+                  className="overflow-hidden rounded-[1.5rem] border border-white/8 bg-[#111111] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]"
+                >
                   {useDesktopEditor ? (
                     <div className="h-[23rem] md:h-[28rem] xl:h-[33rem]">
                       <MonacoEditor
@@ -275,10 +356,12 @@ export default function PythonRoomShell() {
                     <div className="p-4">
                       <label className="mb-3 block font-mono text-[10px] uppercase tracking-[0.24em] text-white/42">Mobile editing surface</label>
                       <textarea
+                        ref={mobileEditorRef}
                         value={code}
                         onChange={(event) => setCode(event.target.value)}
                         spellCheck={false}
-                        className="min-h-[18rem] w-full resize-none rounded-[1.2rem] border border-white/8 bg-black/30 px-4 py-4 font-mono text-[13px] leading-6 text-white/84 outline-none"
+                        className="w-full resize-none overflow-hidden rounded-[1.2rem] border border-white/8 bg-black/30 px-4 py-4 font-mono text-[13px] leading-6 text-white/84 outline-none"
+                        style={{ touchAction: 'pan-y' }}
                       />
                     </div>
                   )}
@@ -288,17 +371,20 @@ export default function PythonRoomShell() {
 
             <div className="flex flex-col gap-3 rounded-[1.75rem] border border-white/8 bg-white/[0.03] p-4 shadow-[0_20px_64px_rgba(0,0,0,0.28)] backdrop-blur-[24px] sm:flex-row sm:items-center sm:justify-between sm:p-5">
               <div>
-                <div className="font-mono text-[10px] uppercase tracking-[0.26em] text-white/38">Day 1 interaction</div>
-                <div className="mt-2 text-sm text-white/68">Run shows simulated output only. Real Python execution starts in Day 2.</div>
+                <div className="font-mono text-[10px] uppercase tracking-[0.26em] text-white/38">Day 2 execution</div>
+                <div className="mt-2 text-sm text-white/68">
+                  Python now runs directly in your browser through Pyodide. First load may take a few seconds while the runtime initializes.
+                </div>
               </div>
 
               <button
                 type="button"
-                className="inline-flex min-h-12 items-center justify-center gap-3 rounded-full bg-white px-7 py-3 font-mono text-[11px] uppercase tracking-[0.22em] text-black transition-transform duration-300 hover:scale-[0.99] hoverable"
-                onClick={() => setHasRunPreview(true)}
+                className="inline-flex min-h-12 items-center justify-center gap-3 rounded-full bg-white px-7 py-3 font-mono text-[11px] uppercase tracking-[0.22em] text-black transition-transform duration-300 hover:scale-[0.99] hoverable disabled:cursor-not-allowed disabled:opacity-70"
+                onClick={handleRun}
+                disabled={runtimeState === 'warming' || runtimeState === 'running'}
               >
                 <CirclePlay size={16} />
-                Run Preview
+                {runtimeState === 'warming' ? 'Loading Python' : runtimeState === 'running' ? 'Running' : 'Run Python'}
               </button>
             </div>
 
@@ -310,14 +396,14 @@ export default function PythonRoomShell() {
                     <div className="mt-2 text-sm text-white/62">{outputLabel}</div>
                   </div>
 
-                  <div className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 font-mono text-[10px] uppercase tracking-[0.22em] text-white/58">
-                    Simulated
+                  <div className={`rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 font-mono text-[10px] uppercase tracking-[0.22em] ${outputBadgeClassName}`}>
+                    {outputBadgeLabel}
                   </div>
                 </div>
 
                 <div className="mt-5 overflow-hidden rounded-[1.5rem] border border-white/8 bg-[#0d0d0d]">
                   <pre className="overflow-x-auto px-4 py-5 font-mono text-[12px] leading-6 whitespace-pre-wrap text-white/78 sm:px-5 sm:text-[13px]">
-                    {hasRunPreview ? pythonRoomDayOneContent.fakeOutput : 'Click “Run Preview” to populate this panel with a simulated result.'}
+                    {output}
                   </pre>
                 </div>
               </div>
@@ -351,7 +437,7 @@ export default function PythonRoomShell() {
                 <section className="rounded-[1.35rem] border border-white/8 bg-black/24 p-4">
                   <div className="font-mono text-[10px] uppercase tracking-[0.26em] text-white/38">Starter guidance</div>
                   <p className="mt-3 text-sm leading-relaxed text-white/60">
-                    Keep the output to one line per learner. Use one clean loop and one conditional branch block. Day 1 is layout only, so the output area stays simulated until Pyodide arrives.
+                    Keep the output to one line per learner. Use one clean loop and one conditional branch block. Day 2 now runs real Python in the browser, so the output panel reflects your actual code.
                   </p>
                 </section>
               </div>
