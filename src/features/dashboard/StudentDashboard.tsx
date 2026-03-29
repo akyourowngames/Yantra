@@ -20,7 +20,6 @@ import {
   TrendingUp,
   UserCircle2,
   Waypoints,
-  X,
   type LucideIcon,
 } from 'lucide-react';
 import { motion, useInView } from 'motion/react';
@@ -29,6 +28,7 @@ import { ChatProvider, useChatWidgetActions } from '@/src/features/chat/ChatWidg
 import { useOverlayLock } from '@/src/features/motion/ExperienceProvider';
 import { useScrollThreshold } from '@/src/features/motion/useScrollThreshold';
 import { buildRoomHref } from '@/src/features/rooms/room-content';
+import YantraMobileMenu from '@/src/features/navigation/YantraMobileMenu';
 import {
   type DashboardRoomTextureKey,
   type DashboardSkillIconKey,
@@ -546,77 +546,14 @@ function DashboardNav() {
         </div>
       </motion.nav>
 
-      {mobileMenuOpen ? (
-        <motion.div
-          data-lenis-prevent
-          className="fixed inset-0 z-[70] flex flex-col overflow-y-auto bg-black/92 p-6 backdrop-blur-2xl md:hidden"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-        >
-          <div className="flex justify-end">
-            <button
-              type="button"
-              className="p-2 text-white hoverable"
-              onClick={() => setMobileMenuOpen(false)}
-              aria-label="Close menu"
-            >
-              <X size={24} />
-            </button>
-          </div>
-
-          <div className="flex flex-1 flex-col items-center justify-center gap-6">
-            {dashboardSectionLinks.map((link, index) => (
-              <motion.a
-                key={link.label}
-                href={link.href}
-                data-no-route-loader="true"
-                className="font-display text-5xl font-medium tracking-tight text-white hoverable"
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.08 }}
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                {link.label}
-              </motion.a>
-            ))}
-
-            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.28 }}>
-              <Link
-                href="/docs/first-dashboard-session"
-                className="rounded-full border border-white/12 bg-white/[0.04] px-7 py-3 font-mono text-[11px] uppercase tracking-[0.24em] text-white hoverable"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Docs
-              </Link>
-            </motion.div>
-
-            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.32 }}>
-              <Link
-                href="/dashboard/student-profile"
-                className="rounded-full border border-white/12 bg-white/[0.04] px-7 py-3 font-mono text-[11px] uppercase tracking-[0.24em] text-white hoverable"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Student Profile
-              </Link>
-            </motion.div>
-
-            <motion.button
-              type="button"
-              className="mt-6 rounded-full bg-white px-7 py-3 font-mono text-[11px] uppercase tracking-[0.24em] text-black hoverable"
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.36 }}
-              onClick={() => {
-                setMobileMenuOpen(false);
-                openChat({ message: 'Help me continue learning from my current student dashboard context.' });
-              }}
-            >
-              Open Yantra AI
-            </motion.button>
-          </div>
-        </motion.div>
-      ) : null}
+      <YantraMobileMenu
+        isOpen={mobileMenuOpen}
+        onClose={() => setMobileMenuOpen(false)}
+        links={dashboardSectionLinks}
+        docsHref="/docs/first-dashboard-session"
+        profileHref="/dashboard/student-profile"
+        onOpenChat={() => openChat({ message: 'Help me continue learning from my current student dashboard context.' })}
+      />
     </>
   );
 }
