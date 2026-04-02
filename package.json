@@ -11,7 +11,8 @@
     "dev-server": "nodemon --watch server --exec tsx server/index.ts",
     "preview": "next start",
     "clean": "rmdir /s /q .next 2>nul",
-    "lint": "next typegen && npx tsc --noEmit"
+    "lint": "next typegen && npx tsc --noEmit",
+    "test": "tsx --test app/api/rooms/python/feedback/route.test.ts src/features/rooms/__tests__/pyodide-runtime.test.ts"
   },
   "dependencies": {
     "@google/genai": "^1.29.0",
