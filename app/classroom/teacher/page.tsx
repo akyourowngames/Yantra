@@ -1,33 +1,38 @@
-/**
- * TEACHER CONTROL SHELL
- * Placeholder for the teacher/mentor dashboard view.
- */
-export default function TeacherPage() {
+import { requireAuthenticatedProfile } from '@/src/lib/supabase/route-guards';
+
+export default async function ClassroomTeacherPage() {
+  await requireAuthenticatedProfile({
+    unauthenticatedRedirect: '/login?message=Log%20in%20to%20open%20the%20teacher%20classroom.&kind=info',
+  });
+
   return (
-    <main className="h-screen w-screen bg-slate-900 text-white p-8 overflow-hidden">
+    <main className="h-screen w-screen overflow-hidden bg-slate-950 px-8 py-8 text-white">
       <header className="mb-8">
-        <h1 className="text-2xl font-bold">Classroom Orchestrator</h1>
-        <p className="text-slate-400 text-sm">Monitoring Python Room Sessions</p>
+        <div className="text-xs uppercase tracking-[0.24em] text-slate-500">Teacher Classroom</div>
+        <h1 className="mt-3 text-3xl font-semibold tracking-tight">Classroom Orchestrator Placeholder</h1>
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-400">
+          This protected shell is reserved for the future teacher control surface. It is intentionally simple and does
+          not include live orchestration logic yet.
+        </p>
       </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-full pb-24">
-        {/* Progress Column */}
-        <div className="bg-slate-800 rounded-xl p-6 border border-slate-700">
-          <h2 className="text-xs uppercase text-slate-500 mb-4">Student Progress</h2>
-          <div className="space-y-4">
-            <div className="h-4 w-full bg-slate-700 rounded animate-pulse" />
-            <div className="h-4 w-3/4 bg-slate-700 rounded animate-pulse" />
+      <section className="grid h-[calc(100vh-11rem)] grid-cols-1 gap-6 md:grid-cols-3">
+        <div className="rounded-[1.75rem] border border-slate-800 bg-slate-900 p-6">
+          <div className="text-xs uppercase tracking-[0.22em] text-slate-500">Student Progress</div>
+          <div className="mt-6 space-y-4">
+            <div className="h-4 w-full rounded bg-slate-800" />
+            <div className="h-4 w-3/4 rounded bg-slate-800" />
+            <div className="h-4 w-5/6 rounded bg-slate-800" />
           </div>
         </div>
 
-        {/* AI Monitoring Column */}
-        <div className="md:col-span-2 bg-slate-950 rounded-xl p-6 border border-slate-700">
-          <h2 className="text-xs uppercase text-slate-500 mb-4">Live AI Feed</h2>
-          <div className="flex items-center justify-center h-full text-slate-600 italic">
-            Waiting for session data...
+        <div className="md:col-span-2 rounded-[1.75rem] border border-slate-800 bg-black p-6">
+          <div className="text-xs uppercase tracking-[0.22em] text-slate-500">Live Classroom Feed</div>
+          <div className="flex h-full items-center justify-center text-sm italic text-slate-600">
+            Waiting for classroom orchestration data...
           </div>
         </div>
-      </div>
+      </section>
     </main>
   );
 }
