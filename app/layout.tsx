@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import { Bebas_Neue, Inter, JetBrains_Mono, Space_Grotesk } from 'next/font/google';
 import '../src/styles/globals.css';
 import { ExperienceProvider } from '@/src/features/motion/ExperienceProvider';
+// 1. Import the Analytics component
+import { Analytics } from '@vercel/analytics/react';
 
 const displayFont = Space_Grotesk({
   subsets: ['latin'],
@@ -48,7 +50,11 @@ export default function RootLayout({
       className={`${displayFont.variable} ${headingFont.variable} ${bodyFont.variable} ${monoFont.variable}`}
     >
       <body className="bg-black text-white antialiased selection:bg-white selection:text-black">
-        <ExperienceProvider>{children}</ExperienceProvider>
+        <ExperienceProvider>
+          {children}
+          {/* 2. Add the Analytics component here */}
+          <Analytics />
+        </ExperienceProvider>
       </body>
     </html>
   );
