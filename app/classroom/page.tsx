@@ -1,50 +1,35 @@
-import { requireAuthenticatedProfile } from '@/src/lib/supabase/route-guards';
-
-type ClassroomPageProps = {
-  searchParams?: Promise<{
-    topic?: string | string[];
-    mode?: string | string[];
-  }>;
-};
-
-function readSearchParam(value: string | string[] | undefined, fallback: string) {
-  if (Array.isArray(value)) {
-    return value[0] || fallback;
-  }
-
-  return value || fallback;
-}
-
-export default async function ClassroomPage({ searchParams }: ClassroomPageProps) {
-  await requireAuthenticatedProfile({
-    unauthenticatedRedirect: '/login?message=Log%20in%20to%20open%20the%20classroom.&kind=info',
-  });
-
-  const params = searchParams ? await searchParams : undefined;
-  const topic = readSearchParam(params?.topic, 'General Study');
-  const mode = readSearchParam(params?.mode, 'Standard');
+/**
+ * STUDENT CLASSROOM SHELL
+ * Placeholder for the main AI-driven learning interface.
+ * Uses 100vw/100vh for a focused, distraction-free "vibe".
+ */
+export default function ClassroomPage({
+  searchParams,
+}: {
+  searchParams: { topic?: string; mode?: string };
+}) {
+  const topic = searchParams.topic || "General Study";
+  const mode = searchParams.mode || "Standard";
 
   return (
-    <main className="flex h-screen w-screen flex-col overflow-hidden bg-slate-950 text-slate-50">
-      <nav className="flex items-center justify-between border-b border-slate-800 px-6 py-4">
-        <div>
-          <div className="text-xs uppercase tracking-[0.24em] text-slate-500">Yantra Classroom</div>
-          <h1 className="mt-2 text-lg font-semibold tracking-tight text-white">Student Placeholder Shell</h1>
-        </div>
-        <div className="flex gap-5 text-xs uppercase tracking-[0.22em] text-slate-400">
+    <main className="h-screen w-screen bg-slate-950 text-slate-50 flex flex-col overflow-hidden">
+      {/* Top Header - Simple & Clean */}
+      <nav className="p-4 border-b border-slate-800 flex justify-between items-center">
+        <h1 className="font-semibold tracking-tight text-lg">Yantra Classroom</h1>
+        <div className="flex gap-4 text-xs uppercase tracking-widest text-slate-400">
           <span>Topic: {topic}</span>
           <span>Mode: {mode}</span>
         </div>
       </nav>
 
-      <section className="flex flex-1 items-center justify-center p-6">
-        <div className="w-full max-w-3xl space-y-6 text-center">
-          <div className="flex aspect-video items-center justify-center rounded-[2rem] border border-dashed border-slate-700 bg-slate-900">
-            <p className="text-sm font-medium text-slate-500">Student classroom stream placeholder</p>
+      {/* Main Content Area */}
+      <section className="flex-1 flex items-center justify-center p-6">
+        <div className="max-w-2xl w-full text-center space-y-6">
+          <div className="aspect-video bg-slate-900 border-2 border-dashed border-slate-800 rounded-2xl flex items-center justify-center">
+            <p className="text-slate-500 font-medium">AI Stream Content Placeholder</p>
           </div>
-          <p className="text-sm leading-6 text-slate-400">
-            This route is a protected shell for the future classroom experience. Topic and mode are already readable from
-            the URL so the real classroom surface can attach later without changing the route shape.
+          <p className="text-sm text-slate-400">
+            Interactive elements and AI responses will be injected here.
           </p>
         </div>
       </section>
