@@ -15,3 +15,4 @@ pnpm-lock.yaml
 note.js
 
 backend/
+20260403070000_add_mastery_and_rooms.sql

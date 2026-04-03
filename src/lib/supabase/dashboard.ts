@@ -139,6 +139,11 @@ function isDashboardAccessError(error: unknown) {
   return code === '42501' || message.includes('permission denied') || message.includes('row-level security');
 }
 
+function isUniqueViolationError(error: unknown) {
+  const code = getErrorCode(error);
+  return code === '23505';
+}
+
 function isRecoverableDashboardError(error: unknown) {
   return isMissingDashboardSchemaError(error) || isDashboardAccessError(error);
 }
@@ -356,6 +361,11 @@ async function seedDashboardData(userId: string) {
     pathResult.error || skillsResult.error || curriculumResult.error || roomsResult.error || weeklyResult.error || null;
 
   if (!error) {
+    return true;
+  }
+
+  // If we hit a unique violation, it means another request already seeded the data.
+  if (isUniqueViolationError(error)) {
     return true;
   }
 
