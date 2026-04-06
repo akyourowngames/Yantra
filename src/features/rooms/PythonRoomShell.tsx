@@ -325,7 +325,7 @@ export default function PythonRoomShell() {
       <header className="sticky top-0 z-30 border-b border-white/8 bg-black/72 backdrop-blur-2xl">
         <div className="mx-auto flex max-w-[1720px] items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex min-w-0 items-center gap-3 sm:gap-5">
-            <Link href="/dashboard" className="font-heading text-3xl tracking-wider text-white hoverable sm:text-4xl">
+            <Link href="/dashboard/rooms/python" className="font-heading text-3xl tracking-wider text-white hoverable sm:text-4xl">
               YANTRA
             </Link>
 
@@ -353,7 +353,7 @@ export default function PythonRoomShell() {
               <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-white/62">22% ready</span>
             </div>
             <Link
-              href="/dashboard"
+              href="/dashboard/rooms/python"
               className="hidden items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 font-mono text-[10px] uppercase tracking-[0.22em] text-white transition-colors hover:bg-white/[0.08] hoverable md:inline-flex"
             >
               <ArrowLeft size={14} />
@@ -461,8 +461,9 @@ export default function PythonRoomShell() {
                     </div>
                   ) : (
                     <div className="p-4">
-                      <label className="mb-3 block font-mono text-[10px] uppercase tracking-[0.24em] text-white/42">Mobile editing surface</label>
+                      <label htmlFor="mobile-code-editor" className="mb-3 block font-mono text-[10px] uppercase tracking-[0.24em] text-white/42">Mobile editing surface</label>
                       <textarea
+                        id="mobile-code-editor"
                         ref={mobileEditorRef}
                         value={code}
                         onChange={(event) => handleCodeChange(event.target.value)}
@@ -492,7 +493,7 @@ export default function PythonRoomShell() {
                       onClick={handleRun}
                       disabled={runtimeState === 'warming' || runtimeState === 'running'}
                     >
-                      <CirclePlay size={16} />
+                      <CirclePlay size={16} aria-hidden="true" />
                       {runtimeState === 'warming' ? 'Loading Python' : runtimeState === 'running' ? 'Running' : 'Run Python'}
                     </button>
                   </div>
