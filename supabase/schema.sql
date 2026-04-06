@@ -450,3 +450,33 @@ for update
 to authenticated
 using ((select auth.uid()) = user_id)
 with check ((select auth.uid()) = user_id);
+
+-- ─── Python Rooms Table ───────────────────────────────────────
+
+create table if not exists public.python_rooms (
+  id text primary key,
+  topic text not null,
+  room_number integer not null,
+  title text not null,
+  learning_goal text not null,
+  concept_summary text not null,
+  difficulty text not null check (difficulty in ('beginner', 'intermediate', 'advanced')),
+  estimated_minutes integer not null,
+  starter_code text not null,
+  expected_output_hint text not null,
+  success_criteria text[] not null default '{}'::text[],
+  starter_guidance text[] not null default '{}'::text[],
+  banned_concepts text[] not null default '{}'::text[],
+  phase_label text not null,
+  created_at timestamptz not null default timezone('utc', now())
+);
+
+-- Public read access — rooms are not user-specific
+alter table public.python_rooms enable row level security;
+
+drop policy if exists "Anyone can read python rooms" on public.python_rooms;
+create policy "Anyone can read python rooms"
+on public.python_rooms
+for select
+to anon, authenticated
+using (true);
