@@ -6,6 +6,12 @@ export async function GET(
     { params }: { params: { slug: string } }
 ) {
     const { slug } = params;
+
+    // Validate slug format (alphanumeric, hyphens, underscores)
+    if (!/^[a-z0-9-_]+$/i.test(slug)) {
+        return NextResponse.json({ error: 'Invalid skill slug' }, { status: 400 });
+    }
+
     const supabase = await createClient();
 
     // Public endpoint - RLS on skills/skill_topics handles security
@@ -20,13 +26,13 @@ export async function GET(
         return NextResponse.json({ error: 'Skill not found' }, { status: 404 });
     }
 
-    const { data: user } = await supabase.auth.getUser();
+    const { data: { user } } = await supabase.auth.getUser();
 
     const fetchTopics = async () => {
         return await supabase
             .from('skill_topics')
             .select(`
-                *,
+                id, slug, name, description, room_type, order_index,
                 student_topic_progress(id, status, started_at, completed_at)
             `)
             .eq('skill_id', skill.id)
@@ -46,18 +52,16 @@ export async function GET(
 
         if (!hasProgress && topics && topics.length > 0) {
             const progressInserts = topics.map((topic, index) => ({
-                user_id: user.id,
+                user_id: user!.id, // Assert user is not null here
                 topic_id: topic.id,
                 status: index === 0 ? 'current' : 'locked'
             }));
 
-            // Fix: Use upsert with onConflict to prevent race condition
-            // If another request seeds first, this will be ignored (no error)
             const { error: seedError } = await supabase
                 .from('student_topic_progress')
                 .upsert(progressInserts, { onConflict: 'user_id,topic_id', ignoreDuplicates: true });
 
-            // Regardless of seed error (likely duplicate), refetch to get the latest state
+            // Refetch to get the latest state
             const { data: reseededTopics } = await fetchTopics();
             if (reseededTopics) {
                 topics = reseededTopics;
@@ -65,5 +69,17 @@ export async function GET(
         }
     }
 
-    return NextResponse.json(topics);
+    // Transform response to include status at top level for easier frontend consumption
+    const rooms = topics?.map(topic => ({
+        room_number: topic.order_index,
+        name: topic.name,
+        description: topic.description,
+        room_type: topic.room_type,
+        status: topic.student_topic_progress?.[0]?.status || 'locked'
+    })) || [];
+
+    return NextResponse.json({
+        rooms,
+        total: rooms.length
+    });
 }
