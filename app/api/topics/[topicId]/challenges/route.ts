@@ -5,14 +5,14 @@ const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12
 
 export async function GET(
     request: Request,
-    { params }: { params: { topicId: string } }
+    { params }: { params: Promise<{ topicId: string }> }
 ) {
-    const { topicId } = params;
+    const { topicId } = await params;
     const { searchParams } = new URL(request.url);
     
     // Pagination params
     const page = parseInt(searchParams.get('page') || '1');
-    const limit = Math.min(parseInt(searchParams.get('limit') || '10'), 50); // Max 50 per page
+    const limit = Math.min(parseInt(searchParams.get('limit') || '10'), 50);
     const offset = (page - 1) * limit;
 
     // Validate UUID format

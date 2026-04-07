@@ -3,15 +3,15 @@ import { NextResponse } from 'next/server';
 
 export async function GET(
     request: Request,
-    { params }: { params: { slug: string } }
+    { params }: { params: Promise<{ slug: string }> }
 ) {
-    const { slug } = params;
-
+    const { slug } = await params;
+    
     // Validate slug format (alphanumeric, hyphens, underscores)
     if (!/^[a-z0-9-_]+$/i.test(slug)) {
         return NextResponse.json({ error: 'Invalid skill slug' }, { status: 400 });
     }
-
+    
     const supabase = await createClient();
 
     // Public endpoint - RLS on skills/skill_topics handles security
@@ -47,17 +47,17 @@ export async function GET(
     }
 
     // Auto-provisioning only for authenticated users
-    if (user) {
-        const hasProgress = topics?.some(t => t.student_topic_progress && t.student_topic_progress.length > 0);
+    if (user && topics) {
+        const hasProgress = topics.some(t => t.student_topic_progress && t.student_topic_progress.length > 0);
 
-        if (!hasProgress && topics && topics.length > 0) {
+        if (!hasProgress && topics.length > 0) {
             const progressInserts = topics.map((topic, index) => ({
-                user_id: user!.id, // Assert user is not null here
+                user_id: user.id,
                 topic_id: topic.id,
                 status: index === 0 ? 'current' : 'locked'
             }));
 
-            const { error: seedError } = await supabase
+            await supabase
                 .from('student_topic_progress')
                 .upsert(progressInserts, { onConflict: 'user_id,topic_id', ignoreDuplicates: true });
 

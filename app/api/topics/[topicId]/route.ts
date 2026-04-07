@@ -5,9 +5,9 @@ const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12
 
 export async function GET(
     request: Request,
-    { params }: { params: { topicId: string } }
+    { params }: { params: Promise<{ topicId: string }> }
 ) {
-    const { topicId } = params;
+    const { topicId } = await params;
 
     // Validate UUID format
     if (!UUID_REGEX.test(topicId)) {

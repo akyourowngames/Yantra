@@ -5,9 +5,9 @@ const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12
 
 export async function GET(
     request: Request,
-    { params }: { params: { topicId: string } }
+    { params }: { params: Promise<{ topicId: string }> }
 ) {
-    const { topicId } = params;
+    const { topicId } = await params;
 
     // Validate UUID format
     if (!UUID_REGEX.test(topicId)) {
@@ -41,9 +41,9 @@ export async function GET(
 
 export async function PATCH(
     request: Request,
-    { params }: { params: { topicId: string } }
+    { params }: { params: Promise<{ topicId: string }> }
 ) {
-    const { topicId } = params;
+    const { topicId } = await params;
 
     // Validate UUID format
     if (!UUID_REGEX.test(topicId)) {
@@ -60,8 +60,7 @@ export async function PATCH(
     const body = await request.json();
     const { status } = body;
 
-    // Only allow 'current' to start a room (no challenge completion required)
-    // To complete a room, use POST /api/rooms/:topicId/complete instead
+    // Only allow 'current' to start a room
     if (!status || !['current'].includes(status)) {
         return NextResponse.json({ 
             error: 'Invalid status. Use POST /api/rooms/:topicId/complete to finish a room.' 
@@ -91,7 +90,6 @@ export async function PATCH(
         return NextResponse.json({ error: 'Progress not initialized' }, { status: 404 });
     }
 
-    // Only allow moving to 'current' if room is available or locked
     if (currentProgress.status !== 'available' && currentProgress.status !== 'locked') {
         return NextResponse.json({ 
             error: `Cannot start room. Current status is ${currentProgress.status}` 
