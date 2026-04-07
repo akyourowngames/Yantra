@@ -699,21 +699,6 @@ create table if not exists public.student_certificates (
     is_public boolean not null default false
 );
 
--- Persisted room configuration for the student dashboard
-create table if not exists public.student_practice_rooms (
-    user_id uuid not null references auth.users (id) on delete cascade,
-    room_key text not null,
-    title text not null,
-    description text not null,
-    status_label text not null,
-    cta_label text not null,
-    prompt text not null,
-    featured boolean not null default false,
-    texture_key text not null,
-    sort_order integer not null default 0,
-    primary key (user_id, room_key)
-);
-
 -- Enable RLS on all new tables
 alter table public.yantra_quiz_bank enable row level security;
 
@@ -810,30 +795,6 @@ select to authenticated using (
         or is_public = true
     );
 
-create policy "Users can view their own practice rooms" on public.student_practice_rooms for
-select to authenticated using (
-        (
-            select auth.uid ()
-        ) = user_id
-    );
-
-create policy "Users can update their own practice rooms" on public.student_practice_rooms for
-update to authenticated using (
-    (
-        select auth.uid ()
-    ) = user_id
-);
-
-create policy "Users can insert their own practice rooms" on public.student_practice_rooms for
-insert
-    to authenticated
-with
-    check (
-        (
-            select auth.uid ()
-        ) = user_id
-    );
-
 -- Generic Updated At Trigger Function
 create or replace function public.handle_updated_at()
 returns trigger
@@ -853,6 +814,7 @@ for each row execute function public.handle_updated_at();
 create trigger set_student_void_sessions_updated_at
 before update on public.student_void_sessions
 for each row execute function public.handle_updated_at();
+<<<<<<< Updated upstream
 
 -- ==========================================
 -- PYTHON ROOM CONTENT BANK
@@ -886,3 +848,5 @@ for each row execute function public.handle_updated_at();
 
 -- Index for fast lookup by slug
 create index if not exists idx_python_rooms_slug on public.python_rooms (slug);
+=======
+>>>>>>> Stashed changes

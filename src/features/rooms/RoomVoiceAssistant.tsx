@@ -47,6 +47,7 @@ const MIN_SPEECH_MS = 450;
 const MIN_CAPTURED_LEVEL = 0.08;
 const HANDS_FREE_REARM_DELAY_MS = 900;
 const PLAYBACK_BOOST_GAIN = 2.4;
+const INPUT_MONITOR_INTERVAL_MS = 80;
 
 type PlaybackOptions = {
   blockedMessage: string;
@@ -278,7 +279,6 @@ const RoomVoiceAssistant = forwardRef<RoomVoiceAssistantHandle, RoomVoiceAssista
   const peakMicLevelRef = useRef(0);
   const silentSinceRef = useRef<number | null>(null);
   const noSpeechTimerRef = useRef<number | null>(null);
-  const [, setMicLevel] = useState(0);
   const shouldResumeAfterSpeechRef = useRef(false);
   const handsFreeEnabledRef = useRef(false);
   const lastAnalyserTickRef = useRef<number | null>(null);
@@ -430,7 +430,6 @@ const RoomVoiceAssistant = forwardRef<RoomVoiceAssistantHandle, RoomVoiceAssista
     peakMicLevelRef.current = 0;
     silentSinceRef.current = null;
     lastAnalyserTickRef.current = null;
-    setMicLevel(0);
     inputSourceRef.current?.disconnect();
     inputAnalyserRef.current?.disconnect();
     inputSourceRef.current = null;
@@ -481,7 +480,16 @@ const RoomVoiceAssistant = forwardRef<RoomVoiceAssistantHandle, RoomVoiceAssista
       const activeRecorder = mediaRecorderRef.current;
 
       if (!activeAnalyser || !activeRecorder || activeRecorder.state !== 'recording') {
-        setMicLevel(0);
+        return;
+      }
+
+      const now = performance.now();
+
+      if (
+        lastAnalyserTickRef.current !== null &&
+        now - lastAnalyserTickRef.current < INPUT_MONITOR_INTERVAL_MS
+      ) {
+        inputMonitorFrameRef.current = window.requestAnimationFrame(tick);
         return;
       }
 
@@ -493,11 +501,9 @@ const RoomVoiceAssistant = forwardRef<RoomVoiceAssistantHandle, RoomVoiceAssista
 
       const rms = Math.sqrt(sumSquares / samples.length);
       const normalizedLevel = Math.min(1, rms * 10);
-      setMicLevel(normalizedLevel);
       peakMicLevelRef.current = Math.max(peakMicLevelRef.current, normalizedLevel);
-
-      const now = performance.now();
-      const deltaMs = lastAnalyserTickRef.current === null ? 0 : now - lastAnalyserTickRef.current;
+      const deltaMs =
+        lastAnalyserTickRef.current === null ? INPUT_MONITOR_INTERVAL_MS : now - lastAnalyserTickRef.current;
       lastAnalyserTickRef.current = now;
       if (rms >= SPEECH_LEVEL_THRESHOLD) {
         heardSpeechRef.current = true;
@@ -789,7 +795,6 @@ const RoomVoiceAssistant = forwardRef<RoomVoiceAssistantHandle, RoomVoiceAssista
       const mimeType = preferredMimeType();
       const recorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
       mediaRecorderRef.current = recorder;
-      startInputMonitoring(stream);
 
       recorder.ondataavailable = (event) => {
         if (event.data.size > 0) {
@@ -826,6 +831,11 @@ const RoomVoiceAssistant = forwardRef<RoomVoiceAssistantHandle, RoomVoiceAssista
       };
 
       recorder.start();
+      window.requestAnimationFrame(() => {
+        if (mediaRecorderRef.current === recorder && recorder.state === 'recording') {
+          startInputMonitoring(stream);
+        }
+      });
       autoStopTimerRef.current = window.setTimeout(() => {
         stopRecordingWithReason();
       }, MAX_RECORDING_MS);
