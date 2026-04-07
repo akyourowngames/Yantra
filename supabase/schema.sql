@@ -814,7 +814,6 @@ for each row execute function public.handle_updated_at();
 create trigger set_student_void_sessions_updated_at
 before update on public.student_void_sessions
 for each row execute function public.handle_updated_at();
-<<<<<<< Updated upstream
 
 -- ==========================================
 -- PYTHON ROOM CONTENT BANK
@@ -848,5 +847,3 @@ for each row execute function public.handle_updated_at();
 
 -- Index for fast lookup by slug
 create index if not exists idx_python_rooms_slug on public.python_rooms (slug);
-=======
->>>>>>> Stashed changes
