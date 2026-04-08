@@ -1,5 +1,4 @@
 import type { RoomBlueprint } from '@/src/features/rooms/room-blueprint';
-import { roomBlueprints } from '@/src/features/rooms/room-blueprints';
 import { createClient } from './server';
 
 type PythonRoomRow = {
@@ -49,12 +48,14 @@ export async function fetchPythonRooms(): Promise<RoomBlueprint[]> {
 
     if (error || !data || data.length === 0) {
       console.warn('python_rooms table unavailable, using local blueprints as fallback.');
+      const { roomBlueprints } = await import('@/src/features/rooms/room-blueprints');
       return roomBlueprints;
     }
 
     return data.map(rowToBlueprint);
   } catch {
     console.warn('Supabase unreachable, using local blueprints as fallback.');
+    const { roomBlueprints } = await import('@/src/features/rooms/room-blueprints');
     return roomBlueprints;
   }
 }
@@ -69,11 +70,13 @@ export async function fetchPythonRoomById(id: string): Promise<RoomBlueprint | n
       .single();
 
     if (error || !data) {
+      const { roomBlueprints } = await import('@/src/features/rooms/room-blueprints');
       return roomBlueprints.find((r) => r.id === id) ?? null;
     }
 
     return rowToBlueprint(data);
   } catch {
+    const { roomBlueprints } = await import('@/src/features/rooms/room-blueprints');
     return roomBlueprints.find((r) => r.id === id) ?? null;
   }
 }

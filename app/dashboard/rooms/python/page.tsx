@@ -1,15 +1,20 @@
-import PythonRoomShell from '@/src/features/rooms/PythonRoomShell';
 import { requireAuthenticatedProfile } from '@/src/lib/supabase/route-guards';
-import { fetchPythonRoomById } from '@/src/lib/supabase/python-rooms';
-import { notFound } from 'next/navigation';
+import { fetchPythonRooms } from '@/src/lib/supabase/python-rooms';
+import { redirect } from 'next/navigation';
 
-export default async function DashboardPythonRoomPage() {
+export default async function DashboardPythonRoomsPageIndex() {
   await requireAuthenticatedProfile({
     unauthenticatedRedirect: '/login?message=Log%20in%20to%20open%20the%20Python%20Room.&kind=info',
   });
 
-  const room = await fetchPythonRoomById('variables-room-1');
-  if (!room) notFound();
+  const rooms = await fetchPythonRooms();
+  if (rooms && rooms.length > 0) {
+    redirect(`/dashboard/rooms/python/${rooms[0].id}`);
+  }
 
-  return <PythonRoomShell room={room} />;
+  return (
+    <div className="flex h-screen items-center justify-center bg-black text-white">
+      No rooms available
+    </div>
+  );
 }

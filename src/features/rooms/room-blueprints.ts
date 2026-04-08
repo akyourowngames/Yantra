@@ -93,6 +93,34 @@ city = "Mumbai"
     phaseLabel: 'Variables // Room 3',
   },
 
+  {
+    id: 'variables-room-4',
+    topic: 'Variables',
+    roomNumber: 4,
+    title: 'Update and Increment',
+    learningGoal: 'Update a variable using its current value and basic math.',
+    conceptSummary: 'Variables are dynamic. You can update a variable by assigning it a new value that depends on its old value, like incrementing a score by 1.',
+    difficulty: 'beginner',
+    estimatedMinutes: 12,
+    starterCode: `score = 10
+# Increase the score by 5
+# Then decrease it by 2
+# Print the final score
+`,
+    expectedOutputHint: '13',
+    successCriteria: [
+      'The variable score is updated twice.',
+      'Mathematical operators + and - are used correctly.',
+      'The final output matches the expected result.',
+    ],
+    starterGuidance: [
+      'Use score = score + 5 to increase the value.',
+      'Alternatively, use the shorthand score += 5.',
+    ],
+    bannedConcepts: ['loops', 'functions', 'if statements', 'lists', 'input()'],
+    phaseLabel: 'Variables // Room 4',
+  },
+
   // ─── TOPIC 2: DATA TYPES (3 rooms) ──────────────────────────
 
   {
@@ -182,6 +210,36 @@ passing_mark = 50
     ],
     bannedConcepts: ['loops', 'functions', 'if statements', 'lists'],
     phaseLabel: 'Data Types // Room 3',
+  },
+
+  {
+    id: 'data-types-room-4',
+    topic: 'Data Types',
+    roomNumber: 4,
+    title: 'Introduction to Lists',
+    learningGoal: 'Create a list and access its elements using index numbers.',
+    conceptSummary: 'A list is an ordered collection of items. You can store different types together and access them using their position (index), starting from zero.',
+    difficulty: 'beginner',
+    estimatedMinutes: 15,
+    starterCode: `fruits = ["apple", "banana", "cherry"]
+
+# Print the first fruit in the list
+# Print the last fruit in the list
+# Change "banana" to "blueberries" and print the whole list
+`,
+    expectedOutputHint: 'apple\ncherry\n[\'apple\', \'blueberries\', \'cherry\']',
+    successCriteria: [
+      'Access the first item using index 0.',
+      'Access the last item using name or index.',
+      'Successfully modify an item in the list.',
+    ],
+    starterGuidance: [
+      'Use fruits[0] for the first item.',
+      'To change an item, use fruits[1] = "blueberries".',
+      'Python lists use square brackets [].',
+    ],
+    bannedConcepts: ['loops', 'functions', 'if statements', 'dictionaries', 'tuples'],
+    phaseLabel: 'Data Types // Room 4',
   },
 
   // ─── TOPIC 3: CONTROL FLOW (3 rooms) ────────────────────────
@@ -277,6 +335,36 @@ passing_mark = 50
     phaseLabel: 'Control Flow // Room 3',
   },
 
+  {
+    id: 'control-flow-room-4',
+    topic: 'Control Flow',
+    roomNumber: 4,
+    title: 'The While Loop',
+    learningGoal: 'Use a while loop to repeat code as long as a condition is True.',
+    conceptSummary: 'A while loop continues to run its block of code until its condition becomes False. It is essential when you need to repeat an action an unknown number of times.',
+    difficulty: 'beginner',
+    estimatedMinutes: 18,
+    starterCode: `count = 1
+
+# Write a while loop that prints "Count is: X" 
+# Keep looping while count is 5 or less
+# Don't forget to increase count inside the loop!
+
+`,
+    expectedOutputHint: 'Count is: 1\nCount is: 2\nCount is: 3\nCount is: 4\nCount is: 5',
+    successCriteria: [
+      'The while loop has a clear condition.',
+      'The loop body prints the count.',
+      'The loop variable is incremented to avoid an infinite loop.',
+    ],
+    starterGuidance: [
+      'Use while count <= 5: as your loop header.',
+      'Add count = count + 1 at the end of your indented block.',
+    ],
+    bannedConcepts: ['functions', 'for loops', 'lists', 'break', 'continue'],
+    phaseLabel: 'Control Flow // Room 4',
+  },
+
   // ─── TOPIC 4: FUNCTIONS (3 rooms) ───────────────────────────
 
   {
@@ -362,6 +450,36 @@ passing_mark = 50
     ],
     bannedConcepts: ['loops', 'if statements', 'default parameters', 'multiple return values'],
     phaseLabel: 'Functions // Room 3',
+  },
+
+  {
+    id: 'functions-room-4',
+    topic: 'Functions',
+    roomNumber: 4,
+    title: 'Default Parameters',
+    learningGoal: 'Create a function with a default parameter value.',
+    conceptSummary: 'Default parameters allow you to call a function without providing all the arguments. If an argument is missing, Python uses the predefined default value.',
+    difficulty: 'beginner',
+    estimatedMinutes: 16,
+    starterCode: `# Define a function "greet" with a parameter "name"
+# Set the default value of "name" to "Guest"
+# The function should print "Welcome, [name]!"
+
+# Call greet() with no name
+# Call greet() with "Asha"
+`,
+    expectedOutputHint: 'Welcome, Guest!\nWelcome, Asha!',
+    successCriteria: [
+      'Function definition includes a default value (name="Guest").',
+      'The first call prints the default greeting.',
+      'The second call overrides the default with "Asha".',
+    ],
+    starterGuidance: [
+      'Define as: def greet(name="Guest"):',
+      'Call simply as greet() then greet("Asha").',
+    ],
+    bannedConcepts: ['loops', 'if statements', '*args', '**kwargs', 'return'],
+    phaseLabel: 'Functions // Room 4',
   },
 
 ];
