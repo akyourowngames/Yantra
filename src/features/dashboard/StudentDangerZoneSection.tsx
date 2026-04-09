@@ -135,7 +135,7 @@ export default function StudentDangerZoneSection({
                 onClick={closeModal}
                 aria-label="Close delete account modal"
               >
-                <X size={18} />
+                <X size={18} aria-hidden="true" />
               </button>
             </div>
 

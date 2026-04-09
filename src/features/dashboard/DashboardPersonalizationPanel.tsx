@@ -390,7 +390,7 @@ export default function DashboardPersonalizationPanel({
                 onClick={closeModal}
                 aria-label="Close personalization flow"
               >
-                <X size={18} />
+                <X size={18} aria-hidden="true" />
               </button>
             </div>
 
