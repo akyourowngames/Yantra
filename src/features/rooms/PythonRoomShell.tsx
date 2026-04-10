@@ -15,7 +15,7 @@ import {
   type PythonRoomFeedbackResponse,
 } from './python-feedback';
 import { type PythonRunError, type PythonRunResult, runPythonInBrowser, warmPyodideRuntime } from './pyodide-runtime';
-import { pythonRoomDayOneContent } from './python-room-content';
+import type { RoomBlueprint } from './room-blueprint';
 
 type MonacoNamespace = typeof import('monaco-editor');
 
@@ -61,8 +61,8 @@ function PythonRoomAmbientBackground() {
   );
 }
 
-export default function PythonRoomShell() {
-  const [code, setCode] = useState(pythonRoomDayOneContent.starterCode);
+export default function PythonRoomShell({ room }: { room: RoomBlueprint }) {
+  const [code, setCode] = useState(room.starterCode);
   const [useDesktopEditor, setUseDesktopEditor] = useState(false);
   const [runtimeState, setRuntimeState] = useState<'warming' | 'idle' | 'running' | 'success' | 'error'>('warming');
   const [output, setOutput] = useState('Python runtime is warming up in the background. Your first run may take a few seconds.');
@@ -248,7 +248,7 @@ export default function PythonRoomShell() {
 
     const requestBody: PythonRoomFeedbackRequest = {
       trigger: 'runtime_error',
-      task: pythonRoomDayOneContent.task,
+      task: room.learningGoal,
       code: submittedCode,
       stdout: result.stdout,
       stderr: result.stderr,
@@ -341,7 +341,7 @@ export default function PythonRoomShell() {
 
           <div className="hidden flex-shrink-0 items-center justify-end gap-2 sm:gap-3 md:flex">
             <div className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 font-mono text-[10px] uppercase tracking-[0.22em] text-white/78">
-              {pythonRoomDayOneContent.level}
+              {room.difficulty}
             </div>
             <div className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 font-mono text-[10px] uppercase tracking-[0.22em] text-white/78">
               Python Room
@@ -379,7 +379,7 @@ export default function PythonRoomShell() {
                     <div className="flex flex-wrap items-center gap-2">
                       <div className="inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 backdrop-blur-xl">
                         <Sparkles size={14} className="text-white/80" />
-                        <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-white/72">{pythonRoomDayOneContent.phaseLabel}</span>
+                        <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-white/72">{room.phaseLabel}</span>
                       </div>
                       <div className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 font-mono text-[10px] uppercase tracking-[0.24em] text-white/52">
                         immersive code stage
@@ -387,11 +387,11 @@ export default function PythonRoomShell() {
                     </div>
 
                     <h1 className="mt-6 max-w-5xl font-display text-[3rem] font-semibold leading-[0.88] tracking-tight text-white sm:text-[4rem] xl:text-[5.25rem]">
-                      {pythonRoomDayOneContent.title}
+                      {room.title}
                     </h1>
 
                     <p className="mt-4 max-w-2xl text-sm font-light leading-relaxed text-white/62 sm:text-[15px]">
-                      {pythonRoomDayOneContent.description}
+                      {room.conceptSummary}
                     </p>
                   </div>
 
@@ -401,7 +401,7 @@ export default function PythonRoomShell() {
                         <Clock3 size={14} className="text-white/60" />
                         Estimated time
                       </div>
-                      <div className="mt-3 font-display text-3xl font-medium text-white">{pythonRoomDayOneContent.estimatedMinutes} min</div>
+                      <div className="mt-3 font-display text-3xl font-medium text-white">{room.estimatedMinutes} min</div>
                     </div>
 
                     <div className="rounded-[1.5rem] bg-white/[0.045] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
@@ -409,7 +409,7 @@ export default function PythonRoomShell() {
                         <FlaskConical size={14} className="text-white/60" />
                         Mode
                       </div>
-                      <div className="mt-3 font-display text-3xl font-medium text-white">{pythonRoomDayOneContent.modeLabel}</div>
+                      <div className="mt-3 font-display text-3xl font-medium text-white">{room.topic}</div>
                     </div>
                   </div>
                 </div>
@@ -540,15 +540,15 @@ export default function PythonRoomShell() {
                       <Target size={14} className="text-white/64" />
                       Mission brief
                     </div>
-                    <div className="mt-5 text-[11px] uppercase tracking-[0.18em] text-white/48">{pythonRoomDayOneContent.level}</div>
-                    <p className="mt-4 text-base leading-relaxed text-white/86">{pythonRoomDayOneContent.task}</p>
+                    <div className="mt-5 text-[11px] uppercase tracking-[0.18em] text-white/48">{room.difficulty}</div>
+                    <p className="mt-4 text-base leading-relaxed text-white/86">{room.learningGoal}</p>
 
                     <div className="mt-6 flex flex-wrap items-center gap-3">
                       <div className="rounded-full border border-white/10 bg-black/28 px-4 py-2 font-mono text-[10px] uppercase tracking-[0.22em] text-white/58">
-                        {pythonRoomDayOneContent.modeLabel}
+                        {room.topic}
                       </div>
                       <div className="rounded-full border border-white/10 bg-black/28 px-4 py-2 font-mono text-[10px] uppercase tracking-[0.22em] text-white/58">
-                        {pythonRoomDayOneContent.estimatedMinutes} min focus
+                        {room.estimatedMinutes} min focus
                       </div>
                     </div>
                   </div>
@@ -561,7 +561,7 @@ export default function PythonRoomShell() {
                       Success criteria
                     </div>
                     <div className="mt-5 space-y-4">
-                      {pythonRoomDayOneContent.successCriteria.map((criterion) => (
+                      {room.successCriteria.map((criterion) => (
                         <div key={criterion} className="flex items-start gap-3 text-sm leading-relaxed text-white/76">
                           <CheckCircle2 size={16} className="mt-0.5 shrink-0 text-white/42" />
                           <span>{criterion}</span>
@@ -576,7 +576,7 @@ export default function PythonRoomShell() {
                       Starter guidance
                     </div>
                     <div className="mt-5 space-y-4">
-                      {pythonRoomDayOneContent.starterGuidance.map((guide) => (
+                      {room.starterGuidance.map((guide) => (
                         <div key={guide} className="flex items-start gap-3 text-sm leading-relaxed text-white/68">
                           <Lightbulb size={16} className="mt-0.5 shrink-0 text-white/38" />
                           <span>{guide}</span>
