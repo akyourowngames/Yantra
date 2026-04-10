@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import {
   ArrowRight,
@@ -35,7 +36,7 @@ import {
   type StudentDashboardRoom,
   type StudentDashboardSkill,
 } from './student-dashboard-model';
-import YantraAmbientBackground from './YantraAmbientBackground';
+const YantraAmbientBackground = dynamic(() => import('./YantraAmbientBackground'), { ssr: false });
 import type {
   DashboardCurriculumNode,
   DashboardMomentumBar,
@@ -563,7 +564,7 @@ function DashboardNav() {
               className="flex h-8 w-8 items-center justify-center rounded-full border border-white/12 bg-white/[0.04] text-white/70 transition-colors hover:bg-white/[0.08]"
               aria-label="Student Profile"
             >
-              <UserCircle2 size={16} />
+              <UserCircle2 size={16} aria-hidden="true" />
             </Link>
             <GlobalSidebar className="text-white hoverable" />
           </div>
@@ -894,7 +895,7 @@ function OverviewSection({ view }: { view: DashboardViewModel }) {
                   })
                 }
               >
-                <ArrowRight size={16} />
+                <ArrowRight size={16} aria-hidden="true" />
               </button>
             </div>
           </div>
@@ -1230,7 +1231,7 @@ function YantraAiSection({ view }: { view: DashboardViewModel }) {
                   className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white text-black transition-colors hover:bg-white/92 hoverable"
                   aria-label="Send prompt"
                 >
-                  <ArrowRight size={16} />
+                  <ArrowRight size={16} aria-hidden="true" />
                 </button>
               </div>
             </form>
