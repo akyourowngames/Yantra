@@ -32,6 +32,20 @@ SARVAM_API_KEY="YOUR_SARVAM_API_KEY"
 
 The Supabase vars are the strict requirement for auth and persistence. The AI and Sarvam vars are needed for realistic end-to-end local testing.
 
+## GitHub Actions Secrets
+
+For the `Sync Database Schema` workflow, configure these encrypted GitHub environment secrets in both `staging` and `production`:
+
+- `SUPABASE_PROJECT_REF`
+- `SUPABASE_DB_PASSWORD`
+- `SUPABASE_ACCESS_TOKEN`
+
+Important:
+
+- `SUPABASE_PROJECT_REF` must be the raw 20-character project ref, such as `abcdefghijklmnopqrst`
+- do not paste the full project URL like `https://YOUR_PROJECT_REF.supabase.co`
+- the workflow selects the `staging` environment for `develop` and `production` for `main`
+
 ## SQL Setup
 
 Run:
