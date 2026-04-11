@@ -15,10 +15,12 @@ export default function StatusPage() {
           ],
         },
         {
-          title: 'Local data',
+          title: 'Local data and sign-in',
           body: [
             'Student profile data and local editor projects are stored in the current browser for the public experience.',
             'If browser storage is cleared or blocked, those local surfaces may reset and need to be recreated on that device.',
+            'Email/password sign-in, password recovery, and Google or GitHub sign-in rely on Supabase configuration in the deployment environment.',
+            'If those credentials are missing or incomplete, the UI surfaces a clear message instead of silently failing.',
           ],
         },
         {

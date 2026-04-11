@@ -1,15 +1,6 @@
-import { notFound } from 'next/navigation';
-import PythonRoomShell from '@/src/features/rooms/PythonRoomShell';
-import { fetchPythonRoomById } from '@/src/lib/supabase/python-rooms';
+import { defaultStudentProfile } from '@/src/features/dashboard/student-profile-model';
+import PythonRoomsIndexPage from '@/src/features/rooms/PythonRoomsIndexPage';
 
-const DEFAULT_PYTHON_ROOM_ID = 'control-flow-calibration';
-
-export default async function DashboardPythonRoomPage() {
-  const room = await fetchPythonRoomById(DEFAULT_PYTHON_ROOM_ID);
-
-  if (!room) {
-    notFound();
-  }
-
-  return <PythonRoomShell room={room} />;
+export default function DashboardPythonRoomsPageIndex() {
+  return <PythonRoomsIndexPage learnerName={defaultStudentProfile.name} />;
 }
