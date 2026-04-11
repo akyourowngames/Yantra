@@ -36,11 +36,9 @@ type PyodideLike = {
   runPythonAsync: (code: string, options?: { filename?: string }) => Promise<unknown>;
 };
 
-declare global {
-  interface Window {
-    loadPyodide?: (options?: PyodideLoaderOptions) => Promise<PyodideLike>;
-  }
-}
+type PyodideWindow = Window & {
+  loadPyodide?: (options?: PyodideLoaderOptions) => Promise<PyodideLike>;
+};
 
 let pyodideScriptPromise: Promise<void> | null = null;
 let pyodidePromise: Promise<PyodideLike> | null = null;
@@ -72,12 +70,31 @@ function getRuntimeScriptNode() {
   return document.querySelector<HTMLScriptElement>('script[data-yantra-pyodide="true"]');
 }
 
+function createStdinReader(stdinText?: string) {
+  const lines = (stdinText ?? '')
+    .split(/\r?\n/)
+    .filter((line, index, allLines) => line.length > 0 || index < allLines.length - 1);
+  let cursor = 0;
+
+  return () => {
+    if (cursor >= lines.length) {
+      return null;
+    }
+
+    const nextLine = lines[cursor] ?? '';
+    cursor += 1;
+    return `${nextLine}\n`;
+  };
+}
+
 function ensurePyodideScript() {
   if (typeof window === 'undefined' || typeof document === 'undefined') {
     return Promise.reject(new Error('Pyodide can only be loaded in the browser.'));
   }
 
-  if (window.loadPyodide) {
+  const pyodideWindow = window as PyodideWindow;
+
+  if (pyodideWindow.loadPyodide) {
     return Promise.resolve();
   }
 
@@ -92,7 +109,7 @@ function ensurePyodideScript() {
     };
 
     const completeLoad = () => {
-      if (!window.loadPyodide) {
+      if (!pyodideWindow.loadPyodide) {
         failLoad('Pyodide script loaded but the runtime bootstrap was unavailable.');
         return;
       }
@@ -137,11 +154,13 @@ export async function getPyodideRuntime() {
   if (!pyodidePromise) {
     pyodidePromise = ensurePyodideScript()
       .then(async () => {
-        if (!window.loadPyodide) {
+        const pyodideWindow = window as PyodideWindow;
+
+        if (!pyodideWindow.loadPyodide) {
           throw new Error('Pyodide bootstrap is unavailable in this browser context.');
         }
 
-        return window.loadPyodide({
+        return pyodideWindow.loadPyodide({
           indexURL: PYODIDE_INDEX_URL,
           fullStdLib: false,
           stdin: () => null,
@@ -167,7 +186,7 @@ export async function warmPyodideRuntime() {
   }
 }
 
-export async function runPythonInBrowser(code: string) {
+export async function runPythonInBrowser(code: string, stdinText?: string) {
   const stdoutBuffer: string[] = [];
   const stderrBuffer: string[] = [];
   let pyodide: PyodideLike | null = null;
@@ -192,7 +211,7 @@ export async function runPythonInBrowser(code: string) {
     });
 
     pyodide.setStdin({
-      stdin: () => null,
+      stdin: createStdinReader(stdinText),
     });
 
     await pyodide.loadPackagesFromImports(code, {
@@ -215,16 +234,23 @@ export async function runPythonInBrowser(code: string) {
 
     return {
       status: 'success' as const,
+      stdout,
+      stderr,
+      resultPreview,
       output: output || 'Program completed with no output.',
     };
   } catch (error) {
     const stdout = normalizeLines(stdoutBuffer);
     const stderr = normalizeLines(stderrBuffer);
     const message = error instanceof Error ? error.message.trim() : String(error).trim();
+    const combinedStderr = [stderr, message].filter(Boolean).join('\n\n').trim();
 
     return {
       status: 'error' as const,
-      output: [stdout, stderr, message].filter(Boolean).join('\n\n').trim() || 'Python execution failed.',
+      stdout,
+      stderr: combinedStderr,
+      resultPreview: '',
+      output: [stdout, combinedStderr].filter(Boolean).join('\n\n').trim() || 'Python execution failed.',
     };
   } finally {
     if (pyodide) {

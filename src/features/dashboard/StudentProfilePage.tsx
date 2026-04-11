@@ -16,6 +16,7 @@ import YantraMobileMenu from '@/src/features/navigation/YantraMobileMenu';
 import StudentProfileCard, { type StudentProfileCardHandle } from './StudentProfileCard';
 import YantraAmbientBackground from './YantraAmbientBackground';
 import { defaultStudentProfile, type StudentProfile } from './student-profile-model';
+import { readPublicProfileFromStorage, savePublicProfileToStorage } from '@/src/lib/public-mode';
 import {
   activityCards,
   curriculumItems,
@@ -34,6 +35,7 @@ type PanelKey = 'notifications' | 'settings' | 'help' | 'roster' | null;
 type StudentProfilePageProps = {
   initialProfileData: StudentProfile;
   defaultProfileData: StudentProfile;
+  publicMode?: boolean;
 };
 
 const PROFILE_SECTION_ID = 'profile-overview';
@@ -309,6 +311,7 @@ function PerformanceSection() {
 export default function StudentProfilePage({
   initialProfileData,
   defaultProfileData,
+  publicMode = false,
 }: StudentProfilePageProps) {
   const [profile, setProfile] = useState<StudentProfile>(initialProfileData);
   const [defaultProfileState, setDefaultProfileState] = useState<StudentProfile>(defaultProfileData);
@@ -320,6 +323,18 @@ export default function StudentProfilePage({
   useEffect(() => {
     setProfile(initialProfileData);
   }, [initialProfileData]);
+
+  useEffect(() => {
+    if (!publicMode) {
+      return;
+    }
+
+    const storedProfile = readPublicProfileFromStorage();
+
+    if (storedProfile) {
+      setProfile(storedProfile);
+    }
+  }, [publicMode]);
 
   useEffect(() => {
     setDefaultProfileState(defaultProfileData);
@@ -342,6 +357,15 @@ export default function StudentProfilePage({
   };
 
   const persistProfile = async (nextProfile: StudentProfile, successMessage: string) => {
+    if (publicMode) {
+      const safeProfile = savePublicProfileToStorage(nextProfile);
+      setProfile(safeProfile);
+      setActivePanel(null);
+      setActiveSection('overview');
+      showStatusMessage(successMessage);
+      return;
+    }
+
     const response = await fetch('/api/profile', {
       method: 'PUT',
       headers: {
@@ -444,7 +468,12 @@ export default function StudentProfilePage({
 
   const handleSaveProfile = async (nextProfile: StudentProfile) => {
     try {
-      await persistProfile(nextProfile, 'Student profile saved to your Yantra account.');
+      await persistProfile(
+        nextProfile,
+        publicMode
+          ? 'Student profile saved locally on this device.'
+          : 'Student profile saved to your Yantra account.',
+      );
     } catch (error) {
       showStatusMessage(error instanceof Error ? error.message : 'Yantra could not save the current profile.');
       throw error;
@@ -709,7 +738,7 @@ export default function StudentProfilePage({
           </div>
 
           <div className="mt-12 border-t border-white/6 pt-6 font-mono text-[10px] uppercase tracking-[0.18em] text-white/34">
-            Student record edits now sync to your Yantra account.
+            {publicMode ? 'Student record edits now stay on this device.' : 'Student record edits now sync to your Yantra account.'}
           </div>
         </div>
       </main>

@@ -63,14 +63,6 @@ function inferCurrentPath(request: Request) {
     if (pathname.startsWith('/docs')) {
       return 'Docs';
     }
-
-    if (pathname.startsWith('/onboarding')) {
-      return 'Onboarding';
-    }
-
-    if (pathname.startsWith('/login') || pathname.startsWith('/signup')) {
-      return 'Account Access';
-    }
   } catch {
     return 'Yantra Dashboard';
   }

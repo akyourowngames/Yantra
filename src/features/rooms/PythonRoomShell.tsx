@@ -7,7 +7,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import YantraMobileMenu from '@/src/features/navigation/YantraMobileMenu';
 import RoomVoiceAssistant from '@/src/features/rooms/RoomVoiceAssistant';
 import { runPythonInBrowser, warmPyodideRuntime } from './pyodide-runtime';
-import { pythonRoomDayOneContent } from './python-room-content';
+import type { RoomBlueprint } from './room-blueprints';
 
 const MonacoEditor = dynamic(() => import('@monaco-editor/react').then((module) => module.default), {
   ssr: false,
@@ -30,6 +30,10 @@ const MonacoEditor = dynamic(() => import('@monaco-editor/react').then((module) 
   ),
 });
 
+type PythonRoomShellProps = {
+  room: RoomBlueprint;
+};
+
 function PythonRoomAmbientBackground() {
   return (
     <div className="pointer-events-none fixed inset-0 z-[-1] overflow-hidden bg-[#040404]">
@@ -49,8 +53,8 @@ function PythonRoomAmbientBackground() {
   );
 }
 
-export default function PythonRoomShell() {
-  const [code, setCode] = useState(pythonRoomDayOneContent.starterCode);
+export default function PythonRoomShell({ room }: PythonRoomShellProps) {
+  const [code, setCode] = useState(room.starterCode);
   const [useDesktopEditor, setUseDesktopEditor] = useState(false);
   const [runtimeState, setRuntimeState] = useState<'warming' | 'idle' | 'running' | 'success' | 'error'>('warming');
   const [output, setOutput] = useState('Python runtime is warming up in the background. Your first run may take a few seconds.');
@@ -167,7 +171,7 @@ export default function PythonRoomShell() {
               <div className="min-w-0">
                 <div className="font-mono text-[10px] uppercase tracking-[0.26em] text-white/40">Session</div>
                 <div className="truncate font-mono text-[11px] uppercase tracking-[0.22em] text-white/70 sm:text-[12px]">
-                  Python Room Calibration
+                  {room.title}
                 </div>
               </div>
             </div>
@@ -188,7 +192,7 @@ export default function PythonRoomShell() {
 
           <div className="mt-3 flex flex-wrap items-center gap-2 sm:gap-3 md:mt-0 md:justify-end">
             <div className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 font-mono text-[10px] uppercase tracking-[0.22em] text-white/78">
-              {pythonRoomDayOneContent.level}
+              {room.level}
             </div>
             <div className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 font-mono text-[10px] uppercase tracking-[0.22em] text-white/78">
               Python Room
@@ -224,10 +228,10 @@ export default function PythonRoomShell() {
               </div>
 
               <h1 className="mt-5 max-w-[15rem] font-display text-[2.8rem] font-semibold leading-[0.9] tracking-tight text-white">
-                {pythonRoomDayOneContent.title}
+                {room.title}
               </h1>
 
-              <p className="mt-4 text-sm leading-relaxed text-white/64">{pythonRoomDayOneContent.description}</p>
+              <p className="mt-4 text-sm leading-relaxed text-white/64">{room.description}</p>
 
               <div className="mt-6 grid gap-3 sm:grid-cols-2">
                 <div className="rounded-[1.35rem] border border-white/8 bg-black/26 p-4">
@@ -235,7 +239,7 @@ export default function PythonRoomShell() {
                     <Clock3 size={14} className="text-white/60" />
                     Estimated time
                   </div>
-                  <div className="mt-3 font-display text-[2rem] font-medium text-white">{pythonRoomDayOneContent.estimatedMinutes} min</div>
+                  <div className="mt-3 font-display text-[2rem] font-medium text-white">{room.estimatedMinutes} min</div>
                 </div>
 
                 <div className="rounded-[1.35rem] border border-white/8 bg-black/26 p-4">
@@ -264,11 +268,11 @@ export default function PythonRoomShell() {
                 </div>
 
                 <h1 className="mt-6 max-w-[20rem] font-display text-[3rem] font-semibold leading-[0.88] tracking-tight text-white sm:max-w-none sm:text-[3.8rem]">
-                  {pythonRoomDayOneContent.title}
+                  {room.title}
                 </h1>
 
                 <p className="mt-5 max-w-2xl text-sm font-light leading-relaxed text-white/64 sm:text-[15px]">
-                  {pythonRoomDayOneContent.description}
+                  {room.description}
                 </p>
 
                 <div className="mt-8 grid gap-3 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
@@ -278,7 +282,7 @@ export default function PythonRoomShell() {
                       Estimated time
                     </div>
                     <div className="mt-3 font-display text-3xl font-medium text-white">
-                      {pythonRoomDayOneContent.estimatedMinutes} min
+                      {room.estimatedMinutes} min
                     </div>
                   </div>
 
@@ -293,7 +297,7 @@ export default function PythonRoomShell() {
 
                 <section className="mt-8 rounded-[1.75rem] border border-white/8 bg-black/28 p-5">
                   <div className="font-mono text-[10px] uppercase tracking-[0.26em] text-white/38">Challenge</div>
-                  <p className="mt-4 text-base leading-relaxed text-white/88">{pythonRoomDayOneContent.task}</p>
+                  <p className="mt-4 text-base leading-relaxed text-white/88">{room.task}</p>
                 </section>
 
                 <section className="mt-5 rounded-[1.75rem] border border-white/8 bg-black/24 p-5">
@@ -423,7 +427,7 @@ export default function PythonRoomShell() {
               <div className="mt-5 space-y-4">
                 <section className="rounded-[1.35rem] border border-white/8 bg-black/28 p-4">
                   <div className="font-mono text-[10px] uppercase tracking-[0.26em] text-white/38">Challenge</div>
-                  <p className="mt-3 text-sm leading-relaxed text-white/84">{pythonRoomDayOneContent.task}</p>
+                  <p className="mt-3 text-sm leading-relaxed text-white/84">{room.task}</p>
                 </section>
 
                 <section className="rounded-[1.35rem] border border-white/8 bg-black/24 p-4">

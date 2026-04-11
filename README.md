@@ -3,17 +3,15 @@
 Yantra is a Next.js 16 prototype for an AI-native learning platform. The current build combines:
 
 - a public marketing site
-- Supabase-backed email/password authentication
-- Supabase-backed Google sign-in
-- protected dashboard routes
-- a persisted student profile
+- a public learner dashboard
+- a locally persisted student profile
+- a public editor with local project storage
 - persisted access requests
-- authenticated chat history continuity
 - a Render-backed Yantra chat assistant routed through the Python AI microservice
 - a room-only Sarvam-powered voice assistant layered on top of the same chat route
 - a separate Python AI microservice under `ai/`
 
-The app is no longer just a static marketing-plus-dashboard shell. Authentication and profile persistence are live; most learning data, roadmap logic, and room functionality are still demo content.
+The app is no longer just a static marketing-plus-dashboard shell. Public dashboard/profile usage is live, and most learning data, roadmap logic, and room functionality are still demo content.
 The main Yantra chat route now proxies into the Python AI microservice when `YANTRA_AI_SERVICE_URL` is set.
 
 ## Current Routes
@@ -21,27 +19,28 @@ The main Yantra chat route now proxies into the Python AI microservice when `YAN
 ### Public pages
 
 - `/` marketing landing page
-- `/login` email/password sign-in
-- `/signup` account creation
-- `/auth/reset-password` password recovery completion
-
-### Protected pages
-
 - `/dashboard` student dashboard
 - `/dashboard/student-profile` editable student profile workspace
-- `/onboarding` required role selection after signup
+- `/editor` public editor workspace
+- `/editor/projects` local project list
+- `/docs` documentation hub
 
-### Auth handlers
+### Compatibility redirects
 
-- `/auth/confirm` email confirmation callback
-- `/auth/signout` sign-out route
+- `/login`
+- `/signup`
+- `/onboarding`
+- `/reset-password`
+- `/auth/confirm`
+- `/auth/reset-password`
+- `/auth/signout`
 
 ### API routes
 
 - `/api/chat` Next.js proxy to the Python Yantra AI service
 - `/api/chat/health` wake-check proxy for the configured Yantra AI service
-- `/api/chat/history` authenticated chat-history load
-- `/api/profile` authenticated profile read/update
+- `/api/chat/history` public-safe chat-history load
+- `/api/profile` authenticated profile read/update for legacy flows
 - `/api/access-requests` access-intent form submission
 - `/api/sarvam/stt` room voice transcription
 - `/api/sarvam/tts` room voice synthesis
@@ -49,16 +48,11 @@ The main Yantra chat route now proxies into the Python AI microservice when `YAN
 ## What Works Today
 
 - Next.js App Router runtime on Vercel-compatible setup
-- Supabase SSR auth with cookie refresh handled through `proxy.ts`
-- automatic profile seeding in `public.profiles` for first-time signed-in users
-- onboarding shown after new account creation, with login returning to the dashboard
-- profile persistence from `/dashboard/student-profile`
-- protected dashboard redirects for signed-out visitors
-- password reset email flow and reset page
-- Google OAuth sign-in through Supabase
+- public dashboard access with no required sign-in
+- local profile persistence from `/dashboard/student-profile`
+- local editor projects and shared-project remix into `/editor`
 - reusable chat widget on the marketing site and dashboard
 - room-only push-to-talk voice assistant using Sarvam STT/TTS
-- authenticated chat history restore across sessions
 - access-request form validation, persistence, and server handling
 
 ## What Is Still Placeholder Or Static
@@ -67,6 +61,7 @@ The main Yantra chat route now proxies into the Python AI microservice when `YAN
 - curriculum and performance content inside the dashboard UI
 - chat moderation, analytics, and tool use
 - practice-room execution engines and dynamic roadmap logic
+- cross-device sync for public-mode profiles and editor projects
 
 ## Project Structure
 
@@ -127,7 +122,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY="YOUR_SUPABASE_ANON_KEY"
 
 ### Database setup
 
-Run the SQL in `supabase/schema.sql` against your Supabase project. That creates `public.profiles`, `public.access_requests`, `public.chat_histories`, plus the update triggers and row-level security policies used by auth, profile persistence, access requests, and authenticated chat continuity.
+Run the SQL in `supabase/schema.sql` against your Supabase project. That creates `public.profiles`, `public.access_requests`, `public.chat_histories`, plus the update triggers and row-level security policies used by access requests and any Supabase-backed legacy profile/chat persistence that is still enabled.
 
 ### Start
 

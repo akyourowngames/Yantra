@@ -1,10 +1,15 @@
+import { notFound } from 'next/navigation';
 import PythonRoomShell from '@/src/features/rooms/PythonRoomShell';
-import { requireAuthenticatedProfile } from '@/src/lib/supabase/route-guards';
+import { fetchPythonRoomById } from '@/src/lib/supabase/python-rooms';
+
+const DEFAULT_PYTHON_ROOM_ID = 'control-flow-calibration';
 
 export default async function DashboardPythonRoomPage() {
-  await requireAuthenticatedProfile({
-    unauthenticatedRedirect: '/login?message=Log%20in%20to%20open%20the%20Python%20Room.&kind=info',
-  });
+  const room = await fetchPythonRoomById(DEFAULT_PYTHON_ROOM_ID);
 
-  return <PythonRoomShell />;
+  if (!room) {
+    notFound();
+  }
+
+  return <PythonRoomShell room={room} />;
 }
